@@ -1,0 +1,14 @@
+.vscode
+.vs
+obj
+bin
+
+local_runner
+
+*.gz
+result
+scores.json
+
+
+
+
