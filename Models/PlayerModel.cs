@@ -1,8 +1,9 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 
 namespace MiniAiCupPaperio
 {
-    public class PlayerModel
+    public class PlayerModel : ICloneable
     {
         [JsonProperty("score")]
         public int Score { get; set; }
@@ -21,5 +22,10 @@ namespace MiniAiCupPaperio
 
         [JsonProperty("bonuses")]
         public PlayerBonusModel[] Bonuses { get; set; }
+
+        public object Clone()
+        {
+            return MemberwiseClone();
+        }
     }
 }

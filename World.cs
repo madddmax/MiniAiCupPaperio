@@ -1,23 +1,23 @@
 ﻿namespace MiniAiCupPaperio
 {
-    public class World
+    public static class World
     {
-        public int XCount { get; set; }
+        public static int XCount { get; set; }
 
-        public int YCount { get; set; }
+        public static int YCount { get; set; }
 
-        public int Speed { get; set; }
+        public static int Speed { get; set; }
 
-        public int Width { get; set; }
+        public static int Width { get; set; }
 
-        public int HalfWidth => Width / 2;
+        public static int HalfWidth => Width / 2;
 
-        public int MinX => HalfWidth;
+        public static int MinX => HalfWidth;
 
-        public int MaxX => XCount * Width - HalfWidth;
+        public static int MaxX => XCount * Width - HalfWidth;
 
-        public int MinY => HalfWidth;
+        public static int MinY => HalfWidth;
 
-        public int MaxY => YCount * Width - HalfWidth;
+        public static int MaxY => YCount * Width - HalfWidth;
     }
 }
