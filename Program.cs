@@ -20,41 +20,43 @@ namespace MiniAiCupPaperio
                 try
                 {
                     var input = Console.ReadLine();
-                    if (!string.IsNullOrEmpty(input))
+                    if (string.IsNullOrEmpty(input))
                     {
-                        var jObject = JObject.Parse(input);
-                        var model = JsonConvert.DeserializeObject<InputModel>(jObject.ToString());
-
-                        if (model.Type == ModelType.StartGame)
-                        {
-                            World.XCount = model.Params.XCount;
-                            World.YCount = model.Params.YCount;
-                            World.Speed = model.Params.Speed;
-                            World.Width = model.Params.Width;
-                            continue;
-                        }
-
-                        if (model.Type == ModelType.EndGame)
-                        {
-                            break;
-                        }
-
-                        _maxDepthNodes = new List<TreeNode>();
-
-                        var me = model.Params.Players.First(p => p.Key == "i").Value;
-                        var tree = new TreeNode {Model = me, Parent = null, Depth = 0};
-                        BuildTree(tree);
-
-
-                        var maxScore = _maxDepthNodes.Max(n => n.Model.Score);
-                        var maxScoreNode = _maxDepthNodes.First(n => n.Model.Score == maxScore);
-                        while (maxScoreNode.Depth != 1)
-                        {
-                            maxScoreNode = maxScoreNode.Parent;
-                        }
-
-                        Console.WriteLine("{{\"command\": \"{0}\"}}", maxScoreNode.Model.Direction);
+                        continue;
                     }
+
+                    var jObject = JObject.Parse(input);
+                    var model = JsonConvert.DeserializeObject<InputModel>(jObject.ToString());
+
+                    if (model.Type == ModelType.StartGame)
+                    {
+                        World.XCount = model.Params.XCount;
+                        World.YCount = model.Params.YCount;
+                        World.Speed = model.Params.Speed;
+                        World.Width = model.Params.Width;
+                        continue;
+                    }
+
+                    if (model.Type == ModelType.EndGame)
+                    {
+                        break;
+                    }
+
+                    _maxDepthNodes = new List<TreeNode>();
+
+                    var me = model.Params.Players.First(p => p.Key == "i").Value;
+                    var tree = new TreeNode {Model = me, Parent = null, Depth = 0};
+                    BuildTree(tree);
+
+
+                    var maxScore = _maxDepthNodes.Max(n => n.Model.Score);
+                    var maxScoreNode = _maxDepthNodes.First(n => n.Model.Score == maxScore);
+                    while (maxScoreNode.Depth != 1)
+                    {
+                        maxScoreNode = maxScoreNode.Parent;
+                    }
+
+                    Console.WriteLine("{{\"command\": \"{0}\"}}", maxScoreNode.Model.Direction);
                 }
                 catch (Exception e)
                 {
