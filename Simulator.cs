@@ -4,9 +4,9 @@ namespace MiniAiCupPaperio
 {
     public static class Simulator
     {
-        public static PlayerModel GetNext(PlayerModel me, string direction)
+        public static PlayerModel GetNext(PlayerModel model, string direction)
         {
-            var nextModel = (PlayerModel) me.Clone();
+            var nextModel = (PlayerModel) model.Clone();
 
             int x = nextModel.Position[0];
             int y = nextModel.Position[1];
@@ -44,13 +44,25 @@ namespace MiniAiCupPaperio
                 }
             }
 
-            if (me.Lines.Any(l => l[0] == x && l[1] == y))
+            nextModel.Direction = direction;
+            nextModel.Position[0] = x;
+            nextModel.Position[1] = y;
+
+            if (nextModel.Lines.Any(l => l[0] == x && l[1] == y))
             {
                 return null;
             }
 
-            nextModel.Position[0] = x;
-            nextModel.Position[1] = y;
+            if (!nextModel.Territory.Any(t => t[0] == x && t[1] == y))
+            {
+                var lines = nextModel.Lines.ToList();
+                lines.Add(nextModel.Position);
+                nextModel.Lines = lines.ToArray();
+            }
+            else if (nextModel.Lines.Length > 0)
+            {
+                nextModel.Score += model.Lines.Length;
+            }
 
             return nextModel;
         }

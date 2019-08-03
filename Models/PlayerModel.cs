@@ -25,7 +25,15 @@ namespace MiniAiCupPaperio
 
         public object Clone()
         {
-            return MemberwiseClone();
+            return new PlayerModel
+            {
+                Score = Score,
+                Position = (int[]) Position.Clone(),
+                Territory = (int[][]) Territory.Clone(),
+                Lines = (int[][]) Lines.Clone(),
+                Direction = Direction,
+                Bonuses = (PlayerBonusModel[]) Bonuses.Clone()
+            };
         }
     }
 }

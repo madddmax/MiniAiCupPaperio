@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
 using Newtonsoft.Json;
@@ -8,7 +9,8 @@ namespace MiniAiCupPaperio
 {
     class Program
     {
-        static PlayerModel Me;
+        private const int MaxDepth = 5; // 7
+        static List<TreeNode> _maxDepthNodes = new List<TreeNode>();
 
         static void Main(string[] args)
         {
@@ -29,28 +31,29 @@ namespace MiniAiCupPaperio
                             World.YCount = model.Params.YCount;
                             World.Speed = model.Params.Speed;
                             World.Width = model.Params.Width;
+                            continue;
                         }
-                        else if (model.Type == ModelType.EndGame)
+
+                        if (model.Type == ModelType.EndGame)
                         {
                             break;
                         }
-                        else
+
+                        _maxDepthNodes = new List<TreeNode>();
+
+                        var me = model.Params.Players.First(p => p.Key == "i").Value;
+                        var tree = new TreeNode {Model = me, Parent = null, Depth = 0};
+                        BuildTree(tree);
+
+
+                        var maxScore = _maxDepthNodes.Max(n => n.Model.Score);
+                        var maxScoreNode = _maxDepthNodes.First(n => n.Model.Score == maxScore);
+                        while (maxScoreNode.Depth != 1)
                         {
-                            Me = model.Params.Players.First(p => p.Key == "i").Value;
-                            var possibleDirections = Direction.GetPossible(Me.Direction);
-                            foreach (var direction in possibleDirections)
-                            {
-                                var nextModel = Simulator.GetNext(Me, direction);
-                                if (nextModel == null)
-                                {
-                                    continue;
-                                }
-
-                                Console.WriteLine("{{\"command\": \"{0}\"}}", direction);
-                                break;
-                            }
-
+                            maxScoreNode = maxScoreNode.Parent;
                         }
+
+                        Console.WriteLine("{{\"command\": \"{0}\"}}", maxScoreNode.Model.Direction);
                     }
                 }
                 catch (Exception e)
@@ -58,7 +61,29 @@ namespace MiniAiCupPaperio
                     Console.WriteLine(e);
                     throw;
                 }
-            } 
+            }
+        }
+
+        static void BuildTree(TreeNode tree)
+        {
+            var possibleDirections = Direction.GetPossible(tree.Model.Direction);
+            foreach (var direction in possibleDirections)
+            {
+                var next = Simulator.GetNext(tree.Model, direction);
+                if (next == null)
+                {
+                    continue;
+                }
+
+                var nextNode = new TreeNode {Model = next, Parent = tree, Depth = tree.Depth + 1 };
+                if (nextNode.Depth == MaxDepth)
+                {
+                    _maxDepthNodes.Add(nextNode);
+                    continue;
+                }
+
+                BuildTree(nextNode);
+            }
         }
     }
 }
