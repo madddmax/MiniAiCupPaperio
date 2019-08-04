@@ -44,19 +44,20 @@ namespace MiniAiCupPaperio
 
                     _maxDepthNodes = new List<TreeNode>();
 
-                    var me = model.Params.Players.First(p => p.Key == "i").Value;
-                    var tree = new TreeNode {Model = me, Parent = null, Depth = 0};
-                    BuildTree(tree);
+                    var my = model.Params.Players.First(p => p.Key == "i").Value;
+                    var enemies = model.Params.Players.Where(p => p.Key != "i").Select(p => p.Value).ToList();
+                    var tree = new TreeNode {My = my, Parent = null, Depth = 0};
 
+                    BuildTree(tree, enemies);
 
-                    var maxScore = _maxDepthNodes.Max(n => n.Model.Score);
-                    var maxScoreNode = _maxDepthNodes.First(n => n.Model.Score == maxScore);
+                    var maxScore = _maxDepthNodes.Max(n => n.My.Score);
+                    var maxScoreNode = _maxDepthNodes.First(n => n.My.Score == maxScore);
                     while (maxScoreNode.Depth != 1)
                     {
                         maxScoreNode = maxScoreNode.Parent;
                     }
 
-                    Console.WriteLine("{{\"command\": \"{0}\"}}", maxScoreNode.Model.Direction);
+                    Console.WriteLine("{{\"command\": \"{0}\"}}", maxScoreNode.My.Direction);
                 }
                 catch (Exception e)
                 {
@@ -66,25 +67,25 @@ namespace MiniAiCupPaperio
             }
         }
 
-        static void BuildTree(TreeNode tree)
+        static void BuildTree(TreeNode tree, List<PlayerModel> enemies)
         {
-            var possibleDirections = Direction.GetPossible(tree.Model.Direction);
+            var possibleDirections = Direction.GetPossible(tree.My.Direction);
             foreach (var direction in possibleDirections)
             {
-                var next = Simulator.GetNext(tree.Model, direction);
+                var next = Simulator.GetNext(tree.My, direction, enemies, tree.Depth);
                 if (next == null)
                 {
                     continue;
                 }
 
-                var nextNode = new TreeNode {Model = next, Parent = tree, Depth = tree.Depth + 1 };
+                var nextNode = new TreeNode {My = next, Parent = tree, Depth = tree.Depth + 1 };
                 if (nextNode.Depth == MaxDepth)
                 {
                     _maxDepthNodes.Add(nextNode);
                     continue;
                 }
 
-                BuildTree(nextNode);
+                BuildTree(nextNode, enemies);
             }
         }
     }
