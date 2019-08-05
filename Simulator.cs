@@ -6,7 +6,9 @@ namespace MiniAiCupPaperio
 {
     public static class Simulator
     {
-        public static PlayerModel GetNext(PlayerModel my, string direction, List<PlayerModel> enemies, int depth)
+        public static List<PlayerModel> Enemies = new List<PlayerModel>();
+
+        public static PlayerModel GetNext(PlayerModel my, string direction, int depth)
         {
             var myNext = (PlayerModel) my.Clone();
 
@@ -68,15 +70,13 @@ namespace MiniAiCupPaperio
                 myNext.Lines = new int[0][]; 
 
                 // todo считает шлейф, а надо шлейф + то что внутри
-                //myNext.Score += my.Lines.GroupBy(l => l[0]).Count() + my.Lines.GroupBy(l => l[1]).Count();
-
                 foreach (var l in my.Lines)
                 {
-                    myNext.Score += (Math.Abs(l[0] - x) + Math.Abs(l[1] - y)) / 30;
+                    myNext.Score += (Math.Abs(l[0] - x) + Math.Abs(l[1] - y)) / World.Width;
                 }
             }
 
-            foreach (var e in enemies)
+            foreach (var e in Enemies)
             {
                 if (depth >= 1 && myNext.Lines.Any(l =>
                     Math.Abs(l[0] - e.Position[0]) + Math.Abs(l[1] - e.Position[1]) <= World.Width * (depth + 2))) // depth + 5

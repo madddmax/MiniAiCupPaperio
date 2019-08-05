@@ -9,13 +9,13 @@ namespace MiniAiCupPaperio
 {
     class Program
     {
-        const int MaxDepth = 5; // 7
-        static List<TreeNode> _allNodes = new List<TreeNode>();
+        private const int MaxDepth = 5; // 7
+        private static List<TreeNode> _allNodes = new List<TreeNode>();
 
-        const int MaxTickCount = 1500;
-        static int currentTick = 0;
+        private const int MaxTickCount = 1500;
+        static int _currentTick = 0;
 
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             //Debugger.Launch();
             while (true)
@@ -46,13 +46,13 @@ namespace MiniAiCupPaperio
                     }
 
                     _allNodes = new List<TreeNode>();
-                    currentTick = model.Params.TickNum;
+                    _currentTick = model.Params.TickNum;
+                    Simulator.Enemies = model.Params.Players.Where(p => p.Key != "i").Select(p => p.Value).ToList();
 
                     var my = model.Params.Players.First(p => p.Key == "i").Value;
-                    var enemies = model.Params.Players.Where(p => p.Key != "i").Select(p => p.Value).ToList();
                     var tree = new TreeNode {My = my, Parent = null, Depth = 0};
 
-                    BuildTree(tree, enemies);
+                    BuildTree(tree);
 
                     var maxScore = _allNodes.Max(n => n.My.Score);
                     var maxScoreNode = _allNodes.First(n => n.My.Score == maxScore);
@@ -71,12 +71,12 @@ namespace MiniAiCupPaperio
             }
         }
 
-        static void BuildTree(TreeNode tree, List<PlayerModel> enemies)
+        private static void BuildTree(TreeNode tree)
         {
             var possibleDirections = Direction.GetPossible(tree.My.Direction);
             foreach (var direction in possibleDirections)
             {
-                var next = Simulator.GetNext(tree.My, direction, enemies, tree.Depth);
+                var next = Simulator.GetNext(tree.My, direction, tree.Depth);
                 if (next == null)
                 {
                     // движение невозможно/опасно
@@ -91,13 +91,13 @@ namespace MiniAiCupPaperio
                     continue;
                 }
 
-                if (currentTick + (nextNode.Depth + 1) * World.OneMoveTicks > MaxTickCount)
+                if (_currentTick + (nextNode.Depth + 1) * World.OneMoveTicks > MaxTickCount)
                 {
                     // рассчет невозможен, т.к. конец игры
                     continue;
                 }
 
-                BuildTree(nextNode, enemies);
+                BuildTree(nextNode);
             }
         }
     }
