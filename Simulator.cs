@@ -68,14 +68,18 @@ namespace MiniAiCupPaperio
                 myNext.Lines = new int[0][]; 
 
                 // todo считает шлейф, а надо шлейф + то что внутри
-                myNext.Score += my.Lines.Length; 
+                //myNext.Score += my.Lines.GroupBy(l => l[0]).Count() + my.Lines.GroupBy(l => l[1]).Count();
+
+                foreach (var l in my.Lines)
+                {
+                    myNext.Score += (Math.Abs(l[0] - x) + Math.Abs(l[1] - y)) / 30;
+                }
             }
 
             foreach (var e in enemies)
             {
-                if (depth >= 2 && myNext.Lines.Any(l =>
-                    Math.Abs(l[0] - e.Position[0]) <= World.Width * depth &&
-                    Math.Abs(l[1] - e.Position[1]) <= World.Width * depth))
+                if (depth >= 1 && myNext.Lines.Any(l =>
+                    Math.Abs(l[0] - e.Position[0]) + Math.Abs(l[1] - e.Position[1]) <= World.Width * (depth + 2))) // depth + 5
                 {
                     // страх перерезания шлейфа
                     return null;

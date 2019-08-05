@@ -9,8 +9,11 @@ namespace MiniAiCupPaperio
 {
     class Program
     {
-        private const int MaxDepth = 5; // 7
-        static List<TreeNode> _maxDepthNodes = new List<TreeNode>();
+        const int MaxDepth = 5; // 7
+        static List<TreeNode> _allNodes = new List<TreeNode>();
+
+        const int MaxTickCount = 1500;
+        static int currentTick = 0;
 
         static void Main(string[] args)
         {
@@ -42,7 +45,8 @@ namespace MiniAiCupPaperio
                         break;
                     }
 
-                    _maxDepthNodes = new List<TreeNode>();
+                    _allNodes = new List<TreeNode>();
+                    currentTick = model.Params.TickNum;
 
                     var my = model.Params.Players.First(p => p.Key == "i").Value;
                     var enemies = model.Params.Players.Where(p => p.Key != "i").Select(p => p.Value).ToList();
@@ -50,8 +54,8 @@ namespace MiniAiCupPaperio
 
                     BuildTree(tree, enemies);
 
-                    var maxScore = _maxDepthNodes.Max(n => n.My.Score);
-                    var maxScoreNode = _maxDepthNodes.First(n => n.My.Score == maxScore);
+                    var maxScore = _allNodes.Max(n => n.My.Score);
+                    var maxScoreNode = _allNodes.First(n => n.My.Score == maxScore);
                     while (maxScoreNode.Depth != 1)
                     {
                         maxScoreNode = maxScoreNode.Parent;
@@ -75,13 +79,21 @@ namespace MiniAiCupPaperio
                 var next = Simulator.GetNext(tree.My, direction, enemies, tree.Depth);
                 if (next == null)
                 {
+                    // движение невозможно/опасно
                     continue;
                 }
 
                 var nextNode = new TreeNode {My = next, Parent = tree, Depth = tree.Depth + 1 };
+                _allNodes.Add(nextNode);
                 if (nextNode.Depth == MaxDepth)
                 {
-                    _maxDepthNodes.Add(nextNode);
+                    // достигнута максимальная глубина рассчета
+                    continue;
+                }
+
+                if (currentTick + (nextNode.Depth + 1) * World.OneMoveTicks > MaxTickCount)
+                {
+                    // рассчет невозможен, т.к. конец игры
                     continue;
                 }
 

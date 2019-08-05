@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-
-namespace MiniAiCupPaperio
+﻿namespace MiniAiCupPaperio
 {
     public static class Direction
     {
@@ -11,30 +8,29 @@ namespace MiniAiCupPaperio
         public const string Down = "down";
         public static string[] All = {Left, Right, Up, Down};
 
-        static Random rnd = new Random();
         public static string[] GetPossible(string current)
         {
             if (current == Left)
             {
-                return new[] {Left, Up, Down}.OrderBy(x => rnd.Next()).ToArray();
+                return new[] {Left, Up, Down};
             }
 
             if (current == Right)
             {
-                return new[] {Right, Up, Down}.OrderBy(x => rnd.Next()).ToArray();
+                return new[] {Right, Up, Down};
             }
 
             if (current == Up)
             {
-                return new[] {Left, Right, Up}.OrderBy(x => rnd.Next()).ToArray();
+                return new[] {Left, Right, Up};
             }
 
             if (current == Down)
             {
-                return new[] {Left, Right, Down}.OrderBy(x => rnd.Next()).ToArray();
+                return new[] {Left, Right, Down};
             }
 
-            return All.OrderBy(x => rnd.Next()).ToArray();
+            return All;
         }
     }
 }

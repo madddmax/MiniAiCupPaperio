@@ -12,6 +12,8 @@
 
         public static int HalfWidth => Width / 2;
 
+        public static int OneMoveTicks => Width / Speed;
+
         public static int MinX => HalfWidth;
 
         public static int MaxX => XCount * Width - HalfWidth;
