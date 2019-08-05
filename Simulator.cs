@@ -63,7 +63,7 @@ namespace MiniAiCupPaperio
             {
                 // вне своей территорий - увеличиваем шлейф
                 var lines = myNext.Lines.ToList();
-                lines.Add(myNext.Position);
+                lines.Add(my.Position); // !!! prevPosition
                 myNext.Lines = lines.ToArray();
             }
 
@@ -74,6 +74,13 @@ namespace MiniAiCupPaperio
                     myNext.Lines.Any(l => Math.Abs(l[0] - e.Position[0]) + Math.Abs(l[1] - e.Position[1]) <= World.Width * (depth + 2)))
                 {
                     // страх пересечения шлейфа
+                    return null;
+                }
+
+                if (myNext.Lines.Length > 0 &&
+                    Math.Abs(x - e.Position[0]) + Math.Abs(y - e.Position[1]) <= World.Width * (depth + 2))
+                {
+                    // страх столкновения с головой
                     return null;
                 }
 
