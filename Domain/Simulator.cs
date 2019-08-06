@@ -6,6 +6,7 @@ namespace MiniAiCupPaperio
 {
     public static class Simulator
     {
+        public static List<MapBonusModel> Bonuses = new List<MapBonusModel>();
         public static List<PlayerModel> Enemies = new List<PlayerModel>();
 
         public static PlayerModel GetNext(PlayerModel my, string direction, int depth)
@@ -70,14 +71,15 @@ namespace MiniAiCupPaperio
             var allEnemyTerritory = new List<int[]>();
             foreach (var e in Enemies)
             {
-                if (depth >= 1 && 
+                if (depth >= 1 &&
                     myNext.Lines.Any(l => Math.Abs(l[0] - e.Position[0]) + Math.Abs(l[1] - e.Position[1]) <= World.Width * (depth + 2)))
                 {
                     // страх пересечения шлейфа
                     return null;
                 }
 
-                if (myNext.Lines.Length > 0 &&
+                if (depth >= 1 &&
+                    !onMyTerritory &&
                     Math.Abs(x - e.Position[0]) + Math.Abs(y - e.Position[1]) <= World.Width * (depth + 2))
                 {
                     // страх столкновения с головой
@@ -93,6 +95,25 @@ namespace MiniAiCupPaperio
                 allEnemyTerritory.AddRange(e.Territory);
             }
 
+            foreach (var bonus in Bonuses)
+            {
+                if (x == bonus.Position[0] && y == bonus.Position[1])
+                {
+                    if (bonus.Type == Bonus.Nitro)
+                    {
+                        myNext.Score += 10;
+                    }
+                    else if (bonus.Type == Bonus.Slow)
+                    {
+                        myNext.Score -= 10;
+                    }
+                    else if (bonus.Type == Bonus.Saw)
+                    {
+                        myNext.Score += 25;
+                    }
+                }
+            }
+
             if (onMyTerritory && myNext.Lines.Length > 0)
             {
                 // завершает шлейф на своей территории
@@ -103,6 +124,7 @@ namespace MiniAiCupPaperio
                     {
                         captureScore = 5;
                     }
+
                     myNext.Score += ((Math.Abs(l[0] - x) + Math.Abs(l[1] - y)) / World.Width) * captureScore;
                 }
 
