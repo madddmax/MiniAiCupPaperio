@@ -9,7 +9,7 @@ namespace MiniAiCupPaperio
 {
     class Program
     {
-        private const int MaxDepth = 5; // 7
+        private const int MaxDepth = 7;
         private static List<TreeNode> _maxDepthNodes = new List<TreeNode>();
         private static List<TreeNode> _notMaxDepthNodes = new List<TreeNode>();
 
@@ -54,9 +54,9 @@ namespace MiniAiCupPaperio
                     Simulator.Enemies = model.Params.Players.Where(p => p.Key != "i").Select(p => p.Value).ToList();
 
                     var my = model.Params.Players.First(p => p.Key == "i").Value;
-                    var tree = new TreeNode {My = my, Parent = null, Depth = 0};
+                    var firstNode = new TreeNode {My = my, Parent = null, Depth = 0};
 
-                    BuildTree(tree);
+                    BuildTree(firstNode);
 
                     var nodes = _maxDepthNodes.Count > 0 ? _maxDepthNodes : _notMaxDepthNodes;
                     var maxScore = nodes.Max(n => n.My.Score);
@@ -84,7 +84,7 @@ namespace MiniAiCupPaperio
                 var next = Simulator.GetNext(tree.My, direction, tree.Depth);
                 if (next == null)
                 {
-                    // движение невозможно/опасно
+                    // движение невозможно
                     continue;
                 }
 

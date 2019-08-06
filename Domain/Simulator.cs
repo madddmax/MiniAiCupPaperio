@@ -71,19 +71,17 @@ namespace MiniAiCupPaperio
             var allEnemyTerritory = new List<int[]>();
             foreach (var e in Enemies)
             {
-                if (depth >= 1 &&
-                    myNext.Lines.Any(l => Math.Abs(l[0] - e.Position[0]) + Math.Abs(l[1] - e.Position[1]) <= World.Width * (depth + 2)))
+                if (myNext.Lines.Any(l => Math.Abs(l[0] - e.Position[0]) + Math.Abs(l[1] - e.Position[1]) <= World.Width * (depth + 2)))
                 {
                     // страх пересечения шлейфа
-                    return null;
+                    myNext.Score -= 500;
                 }
 
-                if (depth >= 1 &&
-                    !onMyTerritory &&
+                if (!onMyTerritory &&
                     Math.Abs(x - e.Position[0]) + Math.Abs(y - e.Position[1]) <= World.Width * (depth + 2))
                 {
                     // страх столкновения с головой
-                    return null;
+                    myNext.Score -= 500;
                 }
 
                 if (e.Lines.Any(l => l[0] == x && l[1] == y))
