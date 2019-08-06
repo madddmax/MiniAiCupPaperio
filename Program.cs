@@ -9,10 +9,12 @@ namespace MiniAiCupPaperio
 {
     class Program
     {
-        private const int MaxDepth = 5; // 7
+        private const int MaxDepth = 12;
         private static List<TreeNode> _allNodes = new List<TreeNode>();
+        private static readonly Dictionary<int, int> DeltaDepth = 
+            new Dictionary<int, int> {{0, 1}, {1, 1}, {2, 1}, {3, 2}, {5, 3}, {8, 4}};
 
-        private const int MaxTickCount = 1500;
+        private const int MaxTickCount = 1499;
         static int _currentTick = 0;
 
         private static void Main(string[] args)
@@ -76,14 +78,15 @@ namespace MiniAiCupPaperio
             var possibleDirections = Direction.GetPossible(tree.My.Direction);
             foreach (var direction in possibleDirections)
             {
-                var next = Simulator.GetNext(tree.My, direction, tree.Depth);
+                int parentDepth = tree.Parent?.Depth ?? -1;
+                var next = Simulator.GetNext(tree.My, direction, tree.Depth, tree.Depth - parentDepth);
                 if (next == null)
                 {
                     // движение невозможно/опасно
                     continue;
                 }
 
-                var nextNode = new TreeNode {My = next, Parent = tree, Depth = tree.Depth + 1 };
+                var nextNode = new TreeNode {My = next, Parent = tree, Depth = tree.Depth + DeltaDepth[tree.Depth] };
                 _allNodes.Add(nextNode);
                 if (nextNode.Depth == MaxDepth)
                 {
@@ -91,7 +94,7 @@ namespace MiniAiCupPaperio
                     continue;
                 }
 
-                if (_currentTick + (nextNode.Depth + 1) * World.OneMoveTicks > MaxTickCount)
+                if (_currentTick + (nextNode.Depth + DeltaDepth[tree.Depth]) * World.OneMoveTicks > MaxTickCount)
                 {
                     // рассчет невозможен, т.к. конец игры
                     continue;
