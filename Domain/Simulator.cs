@@ -115,15 +115,35 @@ namespace MiniAiCupPaperio
             if (onMyTerritory && myNext.Lines.Length > 0)
             {
                 // завершает шлейф на своей территории
-                foreach (var l in myNext.Lines)
+                var polygon = myNext.Lines.Select(l => new Point(l)).ToList();
+                var maxX = myNext.Lines.Max(l => l[0]);
+                var maxY = myNext.Lines.Max(l => l[1]);
+                var minX = myNext.Lines.Min(l => l[0]);
+                var minY = myNext.Lines.Min(l => l[1]);
+
+                var captured = new List<Point>();
+                for (var i = maxX; i >= minX; i -= World.Width)
+                {
+                    for (var j = maxY; j >= minY; j -= World.Width)
+                    {
+                        var point = new Point(i, j);
+                        if (!myNext.Territory.Any(t => t[0] == i && t[1] == j) &&
+                            Point.IsInPolygon(polygon, point))
+                        {
+                            captured.Add(point);
+                        }
+                    }
+                }
+
+                foreach (var p in captured)
                 {
                     int captureScore = 1;
-                    if (allEnemyTerritory.Any(t => t[0] == l[0] && t[1] == l[1]))
+                    if (allEnemyTerritory.Any(t => t[0] == p.X && t[1] == p.Y))
                     {
                         captureScore = 5;
                     }
 
-                    myNext.Score += ((Math.Abs(l[0] - x) + Math.Abs(l[1] - y)) / World.Width) * captureScore;
+                    myNext.Score += captureScore;
                 }
 
                 myNext.Lines = new int[0][];
