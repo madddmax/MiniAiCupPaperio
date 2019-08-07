@@ -149,6 +149,11 @@ namespace MiniAiCupPaperio
                 myNext.Lines = new int[0][];
             }
 
+            if (onMyTerritory)
+            {
+                myNext.Score -= 1;
+            }
+
             return myNext;
         }
     }
