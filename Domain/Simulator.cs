@@ -138,6 +138,7 @@ namespace MiniAiCupPaperio
                 }
 
                 myNext.Lines = new HashSet<Point>();
+                myNext.HasCapture = true;
             }
 
             if (onMyTerritory)

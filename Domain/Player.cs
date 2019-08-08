@@ -14,6 +14,8 @@ namespace MiniAiCupPaperio
 
         public string Direction { get; set; }
 
+        public bool HasCapture { get; set; }
+
         public Player()
         {
         }
@@ -24,6 +26,7 @@ namespace MiniAiCupPaperio
             Position = new Point(player.Position);
             Lines = new HashSet<Point>(player.Lines.Select(l => new Point(l)));
             Direction = player.Direction;
+            HasCapture = false;
         }
 
         public object Clone()
@@ -33,7 +36,8 @@ namespace MiniAiCupPaperio
                 Score = Score,
                 Position = new Point(Position),
                 Lines = new HashSet<Point>(Lines),
-                Direction = Direction
+                Direction = Direction,
+                HasCapture = HasCapture
             };
         }
     }

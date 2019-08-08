@@ -9,9 +9,9 @@ namespace MiniAiCupPaperio
 {
     class Program
     {
-        private const int MaxDepth = 7;
-        private static List<TreeNode> _maxDepthNodes = new List<TreeNode>();
-        private static List<TreeNode> _notMaxDepthNodes = new List<TreeNode>();
+        private const int MaxDepth = 8;
+        private static List<TreeNode> _captureNodes = new List<TreeNode>();
+        private static List<TreeNode> _otherNodes = new List<TreeNode>();
 
         private const int MaxTickCount = 1500;
         static int _currentTick = 0;
@@ -46,8 +46,8 @@ namespace MiniAiCupPaperio
                         break;
                     }
 
-                    _maxDepthNodes = new List<TreeNode>();
-                    _notMaxDepthNodes = new List<TreeNode>();
+                    _captureNodes = new List<TreeNode>();
+                    _otherNodes = new List<TreeNode>();
                     _currentTick = model.Params.TickNum;
 
                     var myPlayerModel = model.Params.Players.First(p => p.Key == "i").Value;
@@ -65,9 +65,8 @@ namespace MiniAiCupPaperio
 
                     BuildTree(firstNode);
 
-                    var nodes = _maxDepthNodes.Count > 0 ? _maxDepthNodes : _notMaxDepthNodes;
-                    var maxScore = nodes.Max(n => n.My.Score);
-                    var maxScoreNode = nodes.First(n => n.My.Score == maxScore);
+                    var nodes = _captureNodes.Count > 0 ? _captureNodes : _otherNodes;
+                    var maxScoreNode = nodes.OrderByDescending(n => n.My.Score).ThenBy(n => n.Depth).First();
                     while (maxScoreNode.Depth != 1)
                     {
                         maxScoreNode = maxScoreNode.Parent;
@@ -96,14 +95,20 @@ namespace MiniAiCupPaperio
                 }
 
                 var nextNode = new TreeNode {My = next, Parent = tree, Depth = tree.Depth + 1};
-                if (nextNode.Depth == MaxDepth)
+                if (nextNode.My.HasCapture)
                 {
-                    // достигнута максимальная глубина рассчета
-                    _maxDepthNodes.Add(nextNode);
+                    // произведен захват территории
+                    _captureNodes.Add(nextNode);
                     continue;
                 }
 
-                _notMaxDepthNodes.Add(nextNode);
+                _otherNodes.Add(nextNode);
+
+                if (nextNode.Depth == MaxDepth)
+                {
+                    // достигнута максимальная глубина рассчета
+                    continue;
+                }
 
                 if (_currentTick + (nextNode.Depth + 1) * World.OneMoveTicks > MaxTickCount)
                 {
