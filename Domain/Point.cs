@@ -1,12 +1,19 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace MiniAiCupPaperio
 {
-    public class Point
+    public class Point : IEquatable<Point>
     {
         public int X;
 
         public int Y;
+
+        public Point(Point point)
+        {
+            X = point.X;
+            Y = point.Y;
+        }
 
         public Point(int[] point)
         {
@@ -32,6 +39,29 @@ namespace MiniAiCupPaperio
                     c = !c;
             }
             return c;
+        }
+
+        public bool Equals(Point other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return Y == other.Y && X == other.X;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((Point) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return (Y * 397) ^ X;
+            }
         }
     }
 }

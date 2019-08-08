@@ -6,96 +6,88 @@ namespace MiniAiCupPaperio
 {
     public static class Simulator
     {
-        public static List<MapBonusModel> Bonuses = new List<MapBonusModel>();
-        public static List<PlayerModel> Enemies = new List<PlayerModel>();
+        public static List<MapBonus> Bonuses = new List<MapBonus>();
+        public static List<Player> Enemies = new List<Player>();
+        public static HashSet<Point> MyTerritory = new HashSet<Point>();
+        public static HashSet<Point> EnemyTerritory = new HashSet<Point>();
 
-        public static PlayerModel GetNext(PlayerModel my, string direction, int depth)
+        public static Player GetNext(Player my, string direction, int depth)
         {
-            var myNext = (PlayerModel) my.Clone();
-
-            int x = myNext.Position[0];
-            int y = myNext.Position[1];
-
-            if (direction == Direction.Left)
-            {
-                x -= World.Width;
-                if (x < World.MinX)
-                {
-                    return null;
-                }
-            }
-            else if(direction == Direction.Right)
-            {
-                x += World.Width;
-                if (x > World.MaxX)
-                {
-                    return null;
-                }
-            }
-            else if (direction == Direction.Up)
-            {
-                y += World.Width;
-                if (y > World.MaxY)
-                {
-                    return null;
-                }
-            }
-            else if (direction == Direction.Down)
-            {
-                y -= World.Width;
-                if (y < World.MinY)
-                {
-                    return null;
-                }
-            }
-
+            var myNext = (Player) my.Clone();
             myNext.Direction = direction;
-            myNext.Position[0] = x;
-            myNext.Position[1] = y;
 
-            if (myNext.Lines.Any(l => l[0] == x && l[1] == y))
+            if (myNext.Direction == Direction.Left)
+            {
+                myNext.Position.X -= World.Width;
+                if (myNext.Position.X < World.MinX)
+                {
+                    return null;
+                }
+            }
+            else if(myNext.Direction == Direction.Right)
+            {
+                myNext.Position.X += World.Width;
+                if (myNext.Position.X > World.MaxX)
+                {
+                    return null;
+                }
+            }
+            else if (myNext.Direction == Direction.Up)
+            {
+                myNext.Position.Y += World.Width;
+                if (myNext.Position.Y > World.MaxY)
+                {
+                    return null;
+                }
+            }
+            else if (myNext.Direction == Direction.Down)
+            {
+                myNext.Position.Y -= World.Width;
+                if (myNext.Position.Y < World.MinY)
+                {
+                    return null;
+                }
+            }
+
+            if (myNext.Lines.Contains(myNext.Position))
             {
                 // пересекает свой шлейф
                 return null;
             }
 
-            var onMyTerritory = myNext.Territory.Any(t => t[0] == x && t[1] == y);
-            if (!onMyTerritory)
+            var prevOnMyTerritory = MyTerritory.Contains(my.Position);
+            if (!prevOnMyTerritory)
             {
                 // вне своей территорий - увеличиваем шлейф
-                var lines = myNext.Lines.ToList();
-                lines.Add(my.Position); // !!! prevPosition
-                myNext.Lines = lines.ToArray();
+                myNext.Lines.Add(my.Position);
             }
 
-            var allEnemyTerritory = new List<int[]>();
+            var onMyTerritory = MyTerritory.Contains(myNext.Position);
             foreach (var e in Enemies)
             {
-                if (myNext.Lines.Any(l => Math.Abs(l[0] - e.Position[0]) + Math.Abs(l[1] - e.Position[1]) <= World.Width * (depth + 2)))
+                if (myNext.Lines.Any(l => Math.Abs(l.X - e.Position.X) + Math.Abs(l.Y - e.Position.Y) <= World.Width * (depth + 2)))
                 {
                     // страх пересечения шлейфа
                     myNext.Score -= 500;
                 }
 
                 if (!onMyTerritory &&
-                    Math.Abs(x - e.Position[0]) + Math.Abs(y - e.Position[1]) <= World.Width * (depth + 2))
+                    Math.Abs(myNext.Position.X - e.Position.X) + Math.Abs(myNext.Position.Y - e.Position.Y) <= World.Width * (depth + 2))
                 {
                     // страх столкновения с головой
                     myNext.Score -= 500;
                 }
 
-                if (e.Lines.Any(l => l[0] == x && l[1] == y))
+                if (e.Lines.Contains(myNext.Position))
                 {
                     // пересекает шлейф противника
                     myNext.Score += 50;
                 }
-
-                allEnemyTerritory.AddRange(e.Territory);
             }
 
             foreach (var bonus in Bonuses)
             {
-                if (x == bonus.Position[0] && y == bonus.Position[1])
+                if (bonus.Position.Equals(myNext.Position))
                 {
                     if (bonus.Type == Bonus.Nitro)
                     {
@@ -112,14 +104,13 @@ namespace MiniAiCupPaperio
                 }
             }
 
-            if (onMyTerritory && myNext.Lines.Length > 0)
+            if (onMyTerritory && myNext.Lines.Count > 0)
             {
                 // завершает шлейф на своей территории
-                var polygon = myNext.Lines.Select(l => new Point(l)).ToList();
-                var maxX = myNext.Lines.Max(l => l[0]);
-                var maxY = myNext.Lines.Max(l => l[1]);
-                var minX = myNext.Lines.Min(l => l[0]);
-                var minY = myNext.Lines.Min(l => l[1]);
+                var maxX = myNext.Lines.Max(l => l.X);
+                var maxY = myNext.Lines.Max(l => l.Y);
+                var minX = myNext.Lines.Min(l => l.X);
+                var minY = myNext.Lines.Min(l => l.Y);
 
                 var captured = new List<Point>();
                 for (var i = maxX; i >= minX; i -= World.Width)
@@ -127,8 +118,8 @@ namespace MiniAiCupPaperio
                     for (var j = maxY; j >= minY; j -= World.Width)
                     {
                         var point = new Point(i, j);
-                        if (!myNext.Territory.Any(t => t[0] == i && t[1] == j) &&
-                            Point.IsInPolygon(polygon, point))
+                        if (!MyTerritory.Contains(point) &&
+                            Point.IsInPolygon(myNext.Lines.ToList(), point))
                         {
                             captured.Add(point);
                         }
@@ -138,7 +129,7 @@ namespace MiniAiCupPaperio
                 foreach (var p in captured)
                 {
                     int captureScore = 1;
-                    if (allEnemyTerritory.Any(t => t[0] == p.X && t[1] == p.Y))
+                    if (EnemyTerritory.Contains(p))
                     {
                         captureScore = 5;
                     }
@@ -146,7 +137,7 @@ namespace MiniAiCupPaperio
                     myNext.Score += captureScore;
                 }
 
-                myNext.Lines = new int[0][];
+                myNext.Lines = new HashSet<Point>();
             }
 
             if (onMyTerritory)

@@ -50,11 +50,18 @@ namespace MiniAiCupPaperio
                     _notMaxDepthNodes = new List<TreeNode>();
                     _currentTick = model.Params.TickNum;
 
-                    Simulator.Bonuses = model.Params.Bonuses.ToList();
-                    Simulator.Enemies = model.Params.Players.Where(p => p.Key != "i").Select(p => p.Value).ToList();
+                    var myPlayerModel = model.Params.Players.First(p => p.Key == "i").Value;
+                    var enemyPlayersModel = model.Params.Players.Where(p => p.Key != "i").Select(p => p.Value).ToList();
 
-                    var my = model.Params.Players.First(p => p.Key == "i").Value;
-                    var firstNode = new TreeNode {My = my, Parent = null, Depth = 0};
+                    Simulator.Bonuses = model.Params.Bonuses.Select(b => new MapBonus(b)).ToList();
+                    Simulator.Enemies = enemyPlayersModel.Select(p => new Player(p)).ToList();
+                    Simulator.MyTerritory = new HashSet<Point>(myPlayerModel.Territory.Select(t => new Point(t)));
+                    foreach (var enemy in enemyPlayersModel)
+                    {
+                        Simulator.EnemyTerritory.UnionWith(enemy.Territory.Select(t => new Point(t)));
+                    }
+
+                    var firstNode = new TreeNode {My = new Player(myPlayerModel), Parent = null, Depth = 0};
 
                     BuildTree(firstNode);
 
