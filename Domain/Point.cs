@@ -27,16 +27,17 @@ namespace MiniAiCupPaperio
             Y = y;
         }
 
-        public static bool IsInPolygon(List<Point> poly, Point pnt)
+        public static bool InPolygon(List<Point> polygon, Point pnt)
         {
-            int i, j;
-            int nvert = poly.Count;
             bool c = false;
-            for (i = 0, j = nvert - 1; i < nvert; j = i++)
+            for (int i = 0, j = polygon.Count - 1; i < polygon.Count; j = i++)
             {
-                if (((poly[i].Y > pnt.Y) != (poly[j].Y > pnt.Y)) &&
-                    (pnt.X < (poly[j].X - poly[i].X) * (pnt.Y - poly[i].Y) / (poly[j].Y - poly[i].Y) + poly[i].X))
+                if (((polygon[i].Y > pnt.Y) != (polygon[j].Y > pnt.Y)) &&
+                    (pnt.X < (polygon[j].X - polygon[i].X) * (pnt.Y - polygon[i].Y) / (polygon[j].Y - polygon[i].Y) +
+                     polygon[i].X))
+                {
                     c = !c;
+                }
             }
             return c;
         }

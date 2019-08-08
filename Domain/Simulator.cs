@@ -119,7 +119,7 @@ namespace MiniAiCupPaperio
                     {
                         var point = new Point(i, j);
                         if (!MyTerritory.Contains(point) &&
-                            Point.IsInPolygon(myNext.Lines.ToList(), point))
+                            Point.InPolygon(myNext.Lines.ToList(), point))
                         {
                             captured.Add(point);
                         }
