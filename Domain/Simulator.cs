@@ -23,6 +23,19 @@ namespace MiniAiCupPaperio
                 {
                     return null;
                 }
+
+                if (myNext.Position.X <= World.MinX + World.Width)
+                {
+                    // отталкивание от границы
+                    myNext.Score -= 5;
+                }
+                else if (MyTerritory.Contains(myNext.Position) &&
+                         MyTerritory.Contains(new Point(myNext.Position.X - World.Width, myNext.Position.Y)) &&
+                         MyTerritory.Contains(new Point(myNext.Position.X - World.Width * 2, myNext.Position.Y)))
+                {
+                    // отталкивание от захваченной территории
+                    myNext.Score -= 1;
+                }
             }
             else if(myNext.Direction == Direction.Right)
             {
@@ -30,6 +43,19 @@ namespace MiniAiCupPaperio
                 if (myNext.Position.X > World.MaxX)
                 {
                     return null;
+                }
+
+                if (myNext.Position.X >= World.MaxX - World.Width)
+                {
+                    // отталкивание от границы
+                    myNext.Score -= 5;
+                }
+                else if (MyTerritory.Contains(myNext.Position) &&
+                         MyTerritory.Contains(new Point(myNext.Position.X + World.Width, myNext.Position.Y)) &&
+                         MyTerritory.Contains(new Point(myNext.Position.X + World.Width * 2, myNext.Position.Y)))
+                {
+                    // отталкивание от захваченной территории
+                    myNext.Score -= 1;
                 }
             }
             else if (myNext.Direction == Direction.Up)
@@ -39,6 +65,19 @@ namespace MiniAiCupPaperio
                 {
                     return null;
                 }
+
+                if (myNext.Position.Y >= World.MaxY - World.Width)
+                {
+                    // отталкивание от границы
+                    myNext.Score -= 5;
+                }
+                else if (MyTerritory.Contains(myNext.Position) &&
+                         MyTerritory.Contains(new Point(myNext.Position.X, myNext.Position.Y - World.Width)) &&
+                         MyTerritory.Contains(new Point(myNext.Position.X, myNext.Position.Y - World.Width * 2)))
+                {
+                    // отталкивание от захваченной территории
+                    myNext.Score -= 1;
+                }
             }
             else if (myNext.Direction == Direction.Down)
             {
@@ -46,6 +85,19 @@ namespace MiniAiCupPaperio
                 if (myNext.Position.Y < World.MinY)
                 {
                     return null;
+                }
+
+                if (myNext.Position.Y <= World.MinY + World.Width)
+                {
+                    // отталкивание от границы
+                    myNext.Score -= 5;
+                }
+                else if (MyTerritory.Contains(myNext.Position) &&
+                         MyTerritory.Contains(new Point(myNext.Position.X, myNext.Position.Y + World.Width)) &&
+                         MyTerritory.Contains(new Point(myNext.Position.X, myNext.Position.Y + World.Width * 2)))
+                {
+                    // отталкивание от захваченной территории
+                    myNext.Score -= 1;
                 }
             }
 
@@ -108,10 +160,12 @@ namespace MiniAiCupPaperio
             if (onMyTerritory && myNext.Lines.Count > 0)
             {
                 // завершает шлейф на своей территории
-                var maxX = myNext.Lines.Max(l => l.X);
-                var maxY = myNext.Lines.Max(l => l.Y);
-                var minX = myNext.Lines.Min(l => l.X);
-                var minY = myNext.Lines.Min(l => l.Y);
+                var polygon = new List<Point>(myNext.Lines);
+
+                var maxX = polygon.Max(l => l.X);
+                var maxY = polygon.Max(l => l.Y);
+                var minX = polygon.Min(l => l.X);
+                var minY = polygon.Min(l => l.Y);
 
                 var captured = new List<Point>();
                 for (var i = maxX; i >= minX; i -= World.Width)
@@ -120,7 +174,7 @@ namespace MiniAiCupPaperio
                     {
                         var point = new Point(i, j);
                         if (!MyTerritory.Contains(point) &&
-                            Point.InPolygon(myNext.Lines.ToList(), point))
+                            Point.InPolygon(polygon, point))
                         {
                             captured.Add(point);
                         }
@@ -140,11 +194,6 @@ namespace MiniAiCupPaperio
 
                 myNext.Lines = new HashSet<Point>();
                 myNext.HasCapture = true;
-            }
-
-            if (onMyTerritory)
-            {
-                myNext.Score -= 1;
             }
 
             return myNext;
