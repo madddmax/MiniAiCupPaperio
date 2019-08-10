@@ -6,15 +6,17 @@ namespace MiniAiCupPaperio
 {
     public class Player : ICloneable
     {
-        public int Score { get; set; }
+        public int Score;
 
-        public Point Position { get; set; }
+        public int RoundedTo2Score => Score % 2 != 0 ? Score + 1 : Score;
 
-        public HashSet<Point> Lines { get; set; }
+        public Point Position;
 
-        public string Direction { get; set; }
+        public HashSet<Point> Lines;
 
-        public bool HasCapture { get; set; }
+        public string Direction;
+
+        public bool HasCapture;
 
         public Player()
         {

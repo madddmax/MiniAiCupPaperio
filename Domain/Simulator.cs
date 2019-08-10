@@ -63,16 +63,17 @@ namespace MiniAiCupPaperio
             }
 
             var onMyTerritory = MyTerritory.Contains(myNext.Position);
+            var depthModificator = depth < 5 ? depth : 5;
             foreach (var e in Enemies)
             {
-                if (myNext.Lines.Any(l => Math.Abs(l.X - e.Position.X) + Math.Abs(l.Y - e.Position.Y) <= World.Width * (depth + 2)))
+                if (myNext.Lines.Any(l => Math.Abs(l.X - e.Position.X) + Math.Abs(l.Y - e.Position.Y) <= World.Width * (depthModificator + 2)))
                 {
                     // страх пересечения шлейфа
                     myNext.Score -= 500;
                 }
 
                 if (!onMyTerritory &&
-                    Math.Abs(myNext.Position.X - e.Position.X) + Math.Abs(myNext.Position.Y - e.Position.Y) <= World.Width * (depth + 2))
+                    Math.Abs(myNext.Position.X - e.Position.X) + Math.Abs(myNext.Position.Y - e.Position.Y) <= World.Width * (depthModificator + 2))
                 {
                     // страх столкновения с головой
                     myNext.Score -= 500;
