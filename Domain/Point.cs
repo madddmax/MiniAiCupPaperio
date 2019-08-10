@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace MiniAiCupPaperio
 {
-    public class Point : IEquatable<Point>
+    public struct Point : IEquatable<Point>
     {
         public int X;
 
@@ -27,42 +27,48 @@ namespace MiniAiCupPaperio
             Y = y;
         }
 
-        public static bool InPolygon(List<Point> polygon, Point pnt)
-        {
-            bool c = false;
-            for (int i = 0, j = polygon.Count - 1; i < polygon.Count; j = i++)
-            {
-                if (((polygon[i].Y > pnt.Y) != (polygon[j].Y > pnt.Y)) &&
-                    (pnt.X < (polygon[j].X - polygon[i].X) * (pnt.Y - polygon[i].Y) / (polygon[j].Y - polygon[i].Y) +
-                     polygon[i].X))
-                {
-                    c = !c;
-                }
-            }
-            return c;
-        }
-
         public bool Equals(Point other)
         {
-            if (ReferenceEquals(null, other)) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return Y == other.Y && X == other.X;
+            return X == other.X && Y == other.Y;
         }
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return Equals((Point) obj);
+            return obj is Point other && Equals(other);
         }
 
         public override int GetHashCode()
         {
             unchecked
             {
-                return (Y * 397) ^ X;
+                return (X * 397) ^ Y;
             }
+        }
+
+        public static List<Point> GetVertAndHoriz(Point point)
+        {
+            return new List<Point>
+            {
+                new Point(point.X, point.Y + World.Width),
+                new Point(point.X - World.Width, point.Y),
+                new Point(point.X, point.Y - World.Width),
+                new Point(point.X + World.Width, point.Y)
+            };
+        }
+
+        public static bool InPolygon(List<Point> polygon, Point point)
+        {
+            bool c = false;
+            for (int i = 0, j = polygon.Count - 1; i < polygon.Count; j = i++)
+            {
+                if (((polygon[i].Y > point.Y) != (polygon[j].Y > point.Y)) &&
+                    (point.X < (polygon[j].X - polygon[i].X) * (point.Y - polygon[i].Y) / (polygon[j].Y - polygon[i].Y) +
+                     polygon[i].X))
+                {
+                    c = !c;
+                }
+            }
+            return c;
         }
     }
 }
