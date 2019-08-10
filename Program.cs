@@ -66,7 +66,7 @@ namespace MiniAiCupPaperio
                     BuildTree(firstNode);
 
                     var nodes = _captureNodes.Count > 0 ? _captureNodes : _otherNodes;
-                    var maxScoreNode = nodes.OrderByDescending(n => n.My.RoundedTo2Score).ThenBy(n => n.Depth).First();
+                    var maxScoreNode = nodes.OrderByDescending(n => n.My.RoundedTo2Score / (n.My.Lines.Count != 0 ? n.My.Lines.Count : 1)).ThenBy(n => n.Depth).First();
                     while (maxScoreNode.Depth != 1)
                     {
                         maxScoreNode = maxScoreNode.Parent;
