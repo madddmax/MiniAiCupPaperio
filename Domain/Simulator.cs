@@ -174,7 +174,7 @@ namespace MiniAiCupPaperio
                     {
                         var point = new Point(i, j);
                         if (!MyTerritory.Contains(point) &&
-                            Point.InPolygon(polygon, point))
+                            PointExtension.InPolygon(polygon, point))
                         {
                             captured.Add(point);
                         }
