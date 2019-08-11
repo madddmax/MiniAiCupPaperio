@@ -119,9 +119,8 @@ namespace MiniAiCupPaperio
             {
                 foreach (var l in myNext.Lines)
                 {
-                    int moves = Math.Abs(l.X - e.Position.X) / World.Width + Math.Abs(l.Y - e.Position.Y) / World.Width;
-                    moves -= DirectionExtension.IsOpposite(e.Direction, myNext.Direction) ? 1 : 0;
-                    if (moves <= depth)
+                    int moves = GetMoves(e.Position, e.Direction, l);
+                    if (moves <= depth + 1)
                     {
                         // страх пересечения шлейфа
                         myNext.Score -= 500;
@@ -130,9 +129,8 @@ namespace MiniAiCupPaperio
 
                 if (!onMyTerritory)
                 {
-                    int moves = Math.Abs(myNext.Position.X - e.Position.X) / World.Width + Math.Abs(myNext.Position.Y - e.Position.Y) / World.Width;
-                    moves -= DirectionExtension.IsOpposite(e.Direction, myNext.Direction) ? 1 : 0;
-                    if (moves <= depth)
+                    int moves = GetMoves(e.Position, e.Direction, myNext.Position);
+                    if (moves <= depth + 1)
                     {
                         // страх столкновения с головой
                         myNext.Score -= 500;
@@ -204,6 +202,25 @@ namespace MiniAiCupPaperio
                     }
 
                     myNext.Score += captureScore;
+
+                    foreach (var bonus in Bonuses)
+                    {
+                        if (bonus.Position.Equals(p))
+                        {
+                            if (bonus.Type == Bonus.Nitro)
+                            {
+                                myNext.Score += 10;
+                            }
+                            else if (bonus.Type == Bonus.Slow)
+                            {
+                                myNext.Score -= 10;
+                            }
+                            else if (bonus.Type == Bonus.Saw)
+                            {
+                                myNext.Score += 25;
+                            }
+                        }
+                    }
                 }
 
                 myNext.Lines = new HashSet<Point>();
@@ -211,6 +228,39 @@ namespace MiniAiCupPaperio
             }
 
             return myNext;
+        }
+
+        public static int GetMoves(Point start, string direction, Point end)
+        {
+            int moves = 0;
+            int deltaX = end.X - start.X;
+            int deltaY = end.Y - start.Y;
+
+            // движение направо
+            if (deltaX > 0)
+            {
+                moves += direction == Direction.Left ? deltaX / World.Width + 1 : deltaX / World.Width;
+            }
+
+            // движение налево
+            if (deltaX < 0)
+            {
+                moves += direction == Direction.Right ? -deltaX / World.Width + 1 : -deltaX / World.Width;
+            }
+
+            // движение вверх
+            if (deltaY > 0)
+            {
+                moves += direction == Direction.Down ? deltaY / World.Width + 1 : deltaY / World.Width;
+            }
+
+            // движение вниз
+            if (deltaY < 0)
+            {
+                moves += direction == Direction.Up ? -deltaY / World.Width + 1 : -deltaY / World.Width;
+            }
+
+            return moves;
         }
     }
 }
