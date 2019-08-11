@@ -115,25 +115,39 @@ namespace MiniAiCupPaperio
             }
 
             var onMyTerritory = MyTerritory.Contains(myNext.Position);
-            var depthModificator = depth < 5 ? depth : 5;
             foreach (var e in Enemies)
             {
-                if (myNext.Lines.Any(l => Math.Abs(l.X - e.Position.X) + Math.Abs(l.Y - e.Position.Y) <= World.Width * (depthModificator + 2)))
+                foreach (var l in myNext.Lines)
                 {
-                    // страх пересечения шлейфа
-                    myNext.Score -= 500;
+                    int moves = Math.Abs(l.X - e.Position.X) / World.Width + Math.Abs(l.Y - e.Position.Y) / World.Width;
+                    moves -= DirectionExtension.IsOpposite(e.Direction, myNext.Direction) ? 1 : 0;
+                    if (moves <= depth)
+                    {
+                        // страх пересечения шлейфа
+                        myNext.Score -= 500;
+                    }
                 }
 
-                if (!onMyTerritory &&
-                    Math.Abs(myNext.Position.X - e.Position.X) + Math.Abs(myNext.Position.Y - e.Position.Y) <= World.Width * (depthModificator + 2))
+                if (!onMyTerritory)
                 {
-                    // страх столкновения с головой
-                    myNext.Score -= 500;
+                    int moves = Math.Abs(myNext.Position.X - e.Position.X) / World.Width + Math.Abs(myNext.Position.Y - e.Position.Y) / World.Width;
+                    moves -= DirectionExtension.IsOpposite(e.Direction, myNext.Direction) ? 1 : 0;
+                    if (moves <= depth)
+                    {
+                        // страх столкновения с головой
+                        myNext.Score -= 500;
+                    }
                 }
 
                 if (e.Lines.Contains(myNext.Position))
                 {
                     // пересекает шлейф противника
+                    myNext.Score += 50;
+                }
+
+                if (onMyTerritory && e.Position.Equals(myNext.Position))
+                {
+                    // бьет противника по голове
                     myNext.Score += 50;
                 }
             }

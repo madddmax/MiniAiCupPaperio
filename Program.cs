@@ -84,7 +84,7 @@ namespace MiniAiCupPaperio
 
         private static void BuildTree(TreeNode tree)
         {
-            var possibleDirections = Direction.GetPossible(tree.My.Direction);
+            var possibleDirections = DirectionExtension.GetPossible(tree.My.Direction);
             foreach (var direction in possibleDirections)
             {
                 var next = Simulator.GetNext(tree.My, direction, tree.Depth);
