@@ -11,6 +11,8 @@ namespace MiniAiCupPaperio
         public static HashSet<Point> MyTerritory = new HashSet<Point>();
         public static HashSet<Point> EnemyTerritory = new HashSet<Point>();
 
+        public static int BorderPushingScore = 10;
+
         public static Player GetNext(Player my, string direction, int depth)
         {
             var myNext = (Player) my.Clone();
@@ -27,7 +29,7 @@ namespace MiniAiCupPaperio
                 if (myNext.Position.X <= World.MinX + World.Width)
                 {
                     // отталкивание от границы
-                    myNext.Score -= 5;
+                    myNext.Score -= BorderPushingScore;
                 }
                 else if (MyTerritory.Contains(myNext.Position) &&
                          MyTerritory.Contains(new Point(myNext.Position.X - World.Width, myNext.Position.Y)) &&
@@ -48,7 +50,7 @@ namespace MiniAiCupPaperio
                 if (myNext.Position.X >= World.MaxX - World.Width)
                 {
                     // отталкивание от границы
-                    myNext.Score -= 5;
+                    myNext.Score -= BorderPushingScore;
                 }
                 else if (MyTerritory.Contains(myNext.Position) &&
                          MyTerritory.Contains(new Point(myNext.Position.X + World.Width, myNext.Position.Y)) &&
@@ -69,7 +71,7 @@ namespace MiniAiCupPaperio
                 if (myNext.Position.Y >= World.MaxY - World.Width)
                 {
                     // отталкивание от границы
-                    myNext.Score -= 5;
+                    myNext.Score -= BorderPushingScore;
                 }
                 else if (MyTerritory.Contains(myNext.Position) &&
                          MyTerritory.Contains(new Point(myNext.Position.X, myNext.Position.Y - World.Width)) &&
@@ -90,7 +92,7 @@ namespace MiniAiCupPaperio
                 if (myNext.Position.Y <= World.MinY + World.Width)
                 {
                     // отталкивание от границы
-                    myNext.Score -= 5;
+                    myNext.Score -= BorderPushingScore;
                 }
                 else if (MyTerritory.Contains(myNext.Position) &&
                          MyTerritory.Contains(new Point(myNext.Position.X, myNext.Position.Y + World.Width)) &&
