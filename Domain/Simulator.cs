@@ -117,19 +117,12 @@ namespace MiniAiCupPaperio
             }
 
             var onMyTerritory = MyTerritory.Contains(myNext.Position);
-            var safetyMoves = 0;
-            if (!onMyTerritory)
-            {
-                var nearestTerritory = MyTerritory.OrderBy(t => Distance(t, myNext.Position)).First();
-                safetyMoves = GetMoves(myNext.Position, myNext.Direction, nearestTerritory);
-            }
-
             foreach (var e in Enemies)
             {
                 foreach (var l in myNext.Lines)
                 {
                     int moves = GetMoves(e.Position, e.Direction, l);
-                    if (moves <= safetyMoves + 1)
+                    if (moves <= depth + 1)
                     {
                         // страх пересечения шлейфа
                         myNext.Score -= 500;
@@ -139,7 +132,7 @@ namespace MiniAiCupPaperio
                 if (!onMyTerritory)
                 {
                     int moves = GetMoves(e.Position, e.Direction, myNext.Position);
-                    if (moves <= safetyMoves + 1)
+                    if (moves <= depth + 1)
                     {
                         // страх столкновения с головой
                         myNext.Score -= 500;

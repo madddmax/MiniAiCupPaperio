@@ -9,7 +9,7 @@ namespace MiniAiCupPaperio
 {
     class Program
     {
-        private const int MaxDepth = 8;
+        private const int MaxDepth = 9;
         private static List<TreeNode> _captureNodes = new List<TreeNode>();
         private static List<TreeNode> _otherNodes = new List<TreeNode>();
 
@@ -62,6 +62,12 @@ namespace MiniAiCupPaperio
                     }
 
                     var firstNode = new TreeNode {My = new Player(myPlayerModel), Parent = null, Depth = 0};
+                    if (firstNode.My.Position.X % World.HalfWidth != 0 ||
+                        firstNode.My.Position.Y % World.HalfWidth != 0)
+                    {
+                        Console.WriteLine("{{\"command\": \"{0}\"}}", firstNode.My.Direction);
+                        continue;
+                    }
 
                     BuildTree(firstNode);
 
