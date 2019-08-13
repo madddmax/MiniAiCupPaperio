@@ -9,7 +9,7 @@ namespace MiniAiCupPaperio
 {
     class Program
     {
-        private const int MaxDepth = 8;
+        private const int MaxDepth = 9;
         private static List<TreeNode> _captureNodes = new List<TreeNode>();
         private static List<TreeNode> _otherNodes = new List<TreeNode>();
 
@@ -62,7 +62,6 @@ namespace MiniAiCupPaperio
                     }
 
                     var firstNode = new TreeNode {My = new Player(myPlayerModel), Parent = null, Depth = 0};
-
                     BuildTree(firstNode);
 
                     var nodes = _captureNodes.Count > 0 ? _captureNodes : _otherNodes;

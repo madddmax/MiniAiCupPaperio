@@ -11,7 +11,7 @@ namespace MiniAiCupPaperio
         public static HashSet<Point> MyTerritory = new HashSet<Point>();
         public static HashSet<Point> EnemyTerritory = new HashSet<Point>();
 
-        public static int BorderPushingScore = 10;
+        public static int BorderPushingScore = 5;
 
         public static Player GetNext(Player my, string direction, int depth)
         {
@@ -117,19 +117,13 @@ namespace MiniAiCupPaperio
             }
 
             var onMyTerritory = MyTerritory.Contains(myNext.Position);
-            var safetyMoves = 0;
-            if (!onMyTerritory)
-            {
-                var nearestTerritory = MyTerritory.OrderBy(t => Distance(t, myNext.Position)).First();
-                safetyMoves = GetMoves(myNext.Position, myNext.Direction, nearestTerritory);
-            }
-
+            var depthModificator = depth < 5 ? depth : 5;
             foreach (var e in Enemies)
             {
                 foreach (var l in myNext.Lines)
                 {
                     int moves = GetMoves(e.Position, e.Direction, l);
-                    if (moves <= safetyMoves + 1)
+                    if (moves <= depthModificator + 2)
                     {
                         // страх пересечения шлейфа
                         myNext.Score -= 500;
@@ -139,7 +133,7 @@ namespace MiniAiCupPaperio
                 if (!onMyTerritory)
                 {
                     int moves = GetMoves(e.Position, e.Direction, myNext.Position);
-                    if (moves <= safetyMoves + 1)
+                    if (moves <= depthModificator + 2)
                     {
                         // страх столкновения с головой
                         myNext.Score -= 500;
