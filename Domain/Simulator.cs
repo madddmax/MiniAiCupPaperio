@@ -115,12 +115,19 @@ namespace MiniAiCupPaperio
             }
 
             var onMyTerritory = MyTerritory.Contains(myNext.Position);
+            var safetyMoves = 0;
+            if (!onMyTerritory)
+            {
+                var nearestTerritory = MyTerritory.OrderBy(t => Distance(t, myNext.Position)).First();
+                safetyMoves = GetMoves(myNext.Position, myNext.Direction, nearestTerritory);
+            }
+
             foreach (var e in Enemies)
             {
                 foreach (var l in myNext.Lines)
                 {
                     int moves = GetMoves(e.Position, e.Direction, l);
-                    if (moves <= depth + 1)
+                    if (moves <= safetyMoves + 1)
                     {
                         // страх пересечения шлейфа
                         myNext.Score -= 500;
@@ -130,7 +137,7 @@ namespace MiniAiCupPaperio
                 if (!onMyTerritory)
                 {
                     int moves = GetMoves(e.Position, e.Direction, myNext.Position);
-                    if (moves <= depth + 1)
+                    if (moves <= safetyMoves + 1)
                     {
                         // страх столкновения с головой
                         myNext.Score -= 500;
@@ -173,13 +180,43 @@ namespace MiniAiCupPaperio
             {
                 // завершает шлейф на своей территории
                 var polygon = new List<Point>(myNext.Lines);
+                var firstPosition = myNext.Lines.First();
+                var position = myNext.Position;
+                for (int i = 0; i < 30; i++)
+                {
+                    polygon.Add(position);
+
+                    var myBorder = new List<Point>();
+                    foreach (var n in PointExtension.GetNeighboring(position))
+                    {
+                        if (n.Equals(firstPosition))
+                        {
+                            i = 30;
+                            break;
+                        }
+
+                        if (MyTerritory.Contains(n))
+                        {
+                            myBorder.Add(n);
+                        }
+                    }
+
+                    if (myBorder.Count > 0)
+                    {
+                        position = myBorder.OrderBy(b => Distance(b, firstPosition)).First();
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
 
                 var maxX = polygon.Max(l => l.X);
                 var maxY = polygon.Max(l => l.Y);
                 var minX = polygon.Min(l => l.X);
                 var minY = polygon.Min(l => l.Y);
 
-                var captured = new List<Point>();
+                var captured = new HashSet<Point>();
                 for (var i = maxX; i >= minX; i -= World.Width)
                 {
                     for (var j = maxY; j >= minY; j -= World.Width)
@@ -192,6 +229,7 @@ namespace MiniAiCupPaperio
                         }
                     }
                 }
+                captured.ExceptWith(myNext.Lines);
 
                 foreach (var p in captured)
                 {
@@ -261,6 +299,11 @@ namespace MiniAiCupPaperio
             }
 
             return moves;
+        }
+
+        public static double Distance(Point p1, Point p2)
+        {
+            return (p1.X - p2.X) * (p1.X - p2.X) + (p1.Y - p2.Y) * (p1.Y - p2.Y);
         }
     }
 }

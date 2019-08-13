@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.28307.757
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MiniAiCupPaperio", "MiniAiCupPaperio.csproj", "{5AC1ED45-86B4-4D83-8276-705DC7E213CE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniAiCupPaperio.Tests", "..\MiniAiCupPaperio.Tests\MiniAiCupPaperio.Tests.csproj", "{88657B61-9508-4C72-AA0F-880C1005D0B3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{5AC1ED45-86B4-4D83-8276-705DC7E213CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5AC1ED45-86B4-4D83-8276-705DC7E213CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5AC1ED45-86B4-4D83-8276-705DC7E213CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{88657B61-9508-4C72-AA0F-880C1005D0B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{88657B61-9508-4C72-AA0F-880C1005D0B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{88657B61-9508-4C72-AA0F-880C1005D0B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{88657B61-9508-4C72-AA0F-880C1005D0B3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
