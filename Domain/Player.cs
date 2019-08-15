@@ -8,8 +8,6 @@ namespace MiniAiCupPaperio
     {
         public int Score;
 
-        public int RoundedTo2Score => Score % 2 != 0 ? Score + 1 : Score;
-
         public Point Position;
 
         public HashSet<Point> Lines;

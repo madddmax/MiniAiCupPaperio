@@ -10,6 +10,7 @@ namespace MiniAiCupPaperio
         public static List<Player> Enemies = new List<Player>();
         public static HashSet<Point> MyTerritory = new HashSet<Point>();
         public static HashSet<Point> EnemyTerritory = new HashSet<Point>();
+        public static Dictionary<Point, int> EnemyFearDic = new Dictionary<Point, int>();
 
         public static int BorderPushingScore = 5;
 
@@ -116,30 +117,31 @@ namespace MiniAiCupPaperio
                 myNext.Lines.Add(my.Position);
             }
 
+
+            foreach (var l in myNext.Lines)
+            {
+                // проблема, т.к. глубина тут не причем на существующем шлейфе
+                if (EnemyFearDic[l] <= depth + 1)
+                {
+                    // страх пересечения шлейфа
+                    //return null;
+                    myNext.Score -= 500;
+                }
+            }
+
             var onMyTerritory = MyTerritory.Contains(myNext.Position);
-            var depthModificator = depth < 5 ? depth : 5;
+            if (!onMyTerritory)
+            {
+                if (EnemyFearDic[myNext.Position] <= depth + 1)
+                {
+                    // страх столкновения с головой
+                    //return null;
+                    myNext.Score -= 500;
+                }
+            }
+
             foreach (var e in Enemies)
             {
-                foreach (var l in myNext.Lines)
-                {
-                    int moves = GetMoves(e.Position, e.Direction, l);
-                    if (moves <= depthModificator + 2)
-                    {
-                        // страх пересечения шлейфа
-                        myNext.Score -= 500;
-                    }
-                }
-
-                if (!onMyTerritory)
-                {
-                    int moves = GetMoves(e.Position, e.Direction, myNext.Position);
-                    if (moves <= depthModificator + 2)
-                    {
-                        // страх столкновения с головой
-                        myNext.Score -= 500;
-                    }
-                }
-
                 if (e.Lines.Contains(myNext.Position))
                 {
                     // пересекает шлейф противника
@@ -262,39 +264,6 @@ namespace MiniAiCupPaperio
             }
 
             return myNext;
-        }
-
-        public static int GetMoves(Point start, string direction, Point end)
-        {
-            int moves = 0;
-            int deltaX = end.X - start.X;
-            int deltaY = end.Y - start.Y;
-
-            // движение направо
-            if (deltaX > 0)
-            {
-                moves += direction == Direction.Left ? deltaX / World.Width + 1 : deltaX / World.Width;
-            }
-
-            // движение налево
-            if (deltaX < 0)
-            {
-                moves += direction == Direction.Right ? -deltaX / World.Width + 1 : -deltaX / World.Width;
-            }
-
-            // движение вверх
-            if (deltaY > 0)
-            {
-                moves += direction == Direction.Down ? deltaY / World.Width + 1 : deltaY / World.Width;
-            }
-
-            // движение вниз
-            if (deltaY < 0)
-            {
-                moves += direction == Direction.Up ? -deltaY / World.Width + 1 : -deltaY / World.Width;
-            }
-
-            return moves;
         }
 
         public static double Distance(Point p1, Point p2)
