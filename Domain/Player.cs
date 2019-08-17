@@ -8,8 +8,6 @@ namespace MiniAiCupPaperio
     {
         public int Score;
 
-        public int RoundedTo2Score => Score % 2 != 0 ? Score + 1 : Score;
-
         public Point Position;
 
         public HashSet<Point> Lines;
@@ -17,6 +15,8 @@ namespace MiniAiCupPaperio
         public string Direction;
 
         public bool HasCapture;
+
+        public PlayerBonus Bonus;
 
         public Player()
         {
@@ -29,6 +29,7 @@ namespace MiniAiCupPaperio
             Lines = new HashSet<Point>(player.Lines.Select(l => new Point(l)));
             Direction = player.Direction;
             HasCapture = false;
+            Bonus = player.Bonuses.Length > 0 ? new PlayerBonus(player.Bonuses[0]) : null;
         }
 
         public object Clone()
@@ -39,7 +40,8 @@ namespace MiniAiCupPaperio
                 Position = new Point(Position),
                 Lines = new HashSet<Point>(Lines),
                 Direction = Direction,
-                HasCapture = HasCapture
+                HasCapture = HasCapture,
+                Bonus = Bonus
             };
         }
     }

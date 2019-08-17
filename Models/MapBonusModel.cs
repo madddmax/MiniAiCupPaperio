@@ -9,5 +9,8 @@ namespace MiniAiCupPaperio
 
         [JsonProperty("position")]
         public int[] Position { get; set; }
+
+        [JsonProperty("active_ticks")]
+        public int ActiveTicks { get; set; }
     }
 }

@@ -53,7 +53,7 @@ namespace MiniAiCupPaperio
                     var myPlayerModel = model.Params.Players.First(p => p.Key == "i").Value;
                     var enemyPlayersModel = model.Params.Players.Where(p => p.Key != "i").Select(p => p.Value).ToList();
 
-                    Simulator.Bonuses = model.Params.Bonuses.Select(b => new MapBonus(b)).ToList();
+                    Simulator.MapBonuses = model.Params.Bonuses.Select(b => new MapBonus(b)).ToList();
                     Simulator.Enemies = enemyPlayersModel.Select(p => new Player(p)).ToList();
                     Simulator.MyTerritory = new HashSet<Point>(myPlayerModel.Territory.Select(t => new Point(t)));
                     foreach (var enemy in enemyPlayersModel)
@@ -62,17 +62,10 @@ namespace MiniAiCupPaperio
                     }
 
                     var firstNode = new TreeNode {My = new Player(myPlayerModel), Parent = null, Depth = 0};
-                    if (firstNode.My.Position.X % World.HalfWidth != 0 ||
-                        firstNode.My.Position.Y % World.HalfWidth != 0)
-                    {
-                        Console.WriteLine("{{\"command\": \"{0}\"}}", firstNode.My.Direction);
-                        continue;
-                    }
-
                     BuildTree(firstNode);
 
                     var nodes = _captureNodes.Count > 0 ? _captureNodes : _otherNodes;
-                    var maxScoreNode = nodes.OrderByDescending(n => n.My.RoundedTo2Score / (n.My.Lines.Count != 0 ? n.My.Lines.Count : 1)).ThenBy(n => n.Depth).First();
+                    var maxScoreNode = nodes.OrderByDescending(n => n.My.Score).ThenBy(n => n.Depth).First();
                     while (maxScoreNode.Depth != 1)
                     {
                         maxScoreNode = maxScoreNode.Parent;

@@ -6,14 +6,13 @@
 
         public Point Position { get; set; }
 
-        public MapBonus()
-        {
-        }
+        public int ActiveTicks { get; set; }
 
         public MapBonus(MapBonusModel mapBonus)
         {
             Type = mapBonus.Type;
             Position = new Point(mapBonus.Position);
+            ActiveTicks = mapBonus.ActiveTicks;
         }
     }
 }
