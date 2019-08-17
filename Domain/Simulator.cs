@@ -118,21 +118,21 @@ namespace MiniAiCupPaperio
                 myNext.Lines.Add(my.Position);
             }
 
-            var movesToMyTerritory = Program.GetMovesToTerritory(my, MyTerritory);
-            foreach (var l in myNext.Lines)
-            {
-                // проблема, т.к. глубина тут не причем на существующем шлейфе
-                if (EnemyMoveDic[l] <= movesToMyTerritory + 1)
-                {
-                    // страх пересечения шлейфа
-                    //return null;
-                    myNext.Score -= 500;
-                }
-            }
-
+            var movesToMyTerritory = Program.GetMovesToTerritory(myNext, MyTerritory);
             var onMyTerritory = MyTerritory.Contains(myNext.Position);
             if (!onMyTerritory)
             {
+                foreach (var l in myNext.Lines)
+                {
+                    // проблема, т.к. глубина тут не причем на существующем шлейфе
+                    if (EnemyMoveDic[l] <= movesToMyTerritory + 1)
+                    {
+                        // страх пересечения шлейфа
+                        //return null;
+                        myNext.Score -= 500;
+                    }
+                }
+
                 if (EnemyMoveDic[myNext.Position] <= movesToMyTerritory + 1)
                 {
                     // страх столкновения с головой

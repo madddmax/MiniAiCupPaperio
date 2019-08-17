@@ -17,7 +17,7 @@ namespace MiniAiCupPaperio
         private static List<TreeNode> _otherNodes = new List<TreeNode>();
 
         private static void Main(string[] args)
-        {
+        {                        
             //Debugger.Launch();
             while (true)
             {
@@ -230,7 +230,7 @@ namespace MiniAiCupPaperio
                     }
                 }
             }
-            return 0;
+            return 30;
         }
 
         private static void SetMoveDic(Dictionary<Point, int> moveDic, Point position, string direction)
