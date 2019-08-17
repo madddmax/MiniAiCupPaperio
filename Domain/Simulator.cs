@@ -225,7 +225,7 @@ namespace MiniAiCupPaperio
                         }
                     }
                 }
-                captured.UnionWith(myNext.Lines);
+                captured.ExceptWith(myNext.Lines);
 
                 foreach (var p in captured)
                 {
