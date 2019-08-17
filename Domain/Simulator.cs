@@ -11,6 +11,8 @@ namespace MiniAiCupPaperio
         public static HashSet<Point> MyTerritory = new HashSet<Point>();
         public static HashSet<Point> EnemyTerritory = new HashSet<Point>();
 
+        public static int BorderPushingScore = 5;
+
         public static Player GetNext(Player my, string direction, int depth)
         {
             var myNext = (Player) my.Clone();
@@ -24,7 +26,12 @@ namespace MiniAiCupPaperio
                     return null;
                 }
 
-                if (MyTerritory.Contains(myNext.Position) &&
+                if (myNext.Position.X <= World.MinX + World.Width)
+                {
+                    // отталкивание от границы
+                    myNext.Score -= BorderPushingScore;
+                }
+                else if (MyTerritory.Contains(myNext.Position) &&
                     MyTerritory.Contains(new Point(myNext.Position.X - World.Width, myNext.Position.Y)) &&
                     MyTerritory.Contains(new Point(myNext.Position.X - World.Width * 2, myNext.Position.Y)))
                 {
@@ -40,7 +47,12 @@ namespace MiniAiCupPaperio
                     return null;
                 }
 
-                if (MyTerritory.Contains(myNext.Position) &&
+                if (myNext.Position.X >= World.MaxX - World.Width)
+                {
+                    // отталкивание от границы
+                    myNext.Score -= BorderPushingScore;
+                }
+                else if (MyTerritory.Contains(myNext.Position) &&
                     MyTerritory.Contains(new Point(myNext.Position.X + World.Width, myNext.Position.Y)) &&
                     MyTerritory.Contains(new Point(myNext.Position.X + World.Width * 2, myNext.Position.Y)))
                 {
@@ -56,7 +68,12 @@ namespace MiniAiCupPaperio
                     return null;
                 }
 
-                if (MyTerritory.Contains(myNext.Position) &&
+                if (myNext.Position.Y >= World.MaxY - World.Width)
+                {
+                    // отталкивание от границы
+                    myNext.Score -= BorderPushingScore;
+                }
+                else if (MyTerritory.Contains(myNext.Position) &&
                     MyTerritory.Contains(new Point(myNext.Position.X, myNext.Position.Y - World.Width)) &&
                     MyTerritory.Contains(new Point(myNext.Position.X, myNext.Position.Y - World.Width * 2)))
                 {
@@ -72,7 +89,12 @@ namespace MiniAiCupPaperio
                     return null;
                 }
 
-                if (MyTerritory.Contains(myNext.Position) &&
+                if (myNext.Position.Y <= World.MinY + World.Width)
+                {
+                    // отталкивание от границы
+                    myNext.Score -= BorderPushingScore;
+                }
+                else if (MyTerritory.Contains(myNext.Position) &&
                     MyTerritory.Contains(new Point(myNext.Position.X, myNext.Position.Y + World.Width)) &&
                     MyTerritory.Contains(new Point(myNext.Position.X, myNext.Position.Y + World.Width * 2)))
                 {
@@ -127,12 +149,6 @@ namespace MiniAiCupPaperio
                 if (e.Lines.Contains(myNext.Position))
                 {
                     // пересекает шлейф противника
-                    myNext.Score += 50;
-                }
-
-                if (onMyTerritory && e.Position.Equals(myNext.Position))
-                {
-                    // бьет противника по голове
                     myNext.Score += 50;
                 }
             }
