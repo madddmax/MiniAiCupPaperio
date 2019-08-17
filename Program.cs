@@ -53,18 +53,18 @@ namespace MiniAiCupPaperio
 
                     var myPlayerModel = model.Params.Players.First(p => p.Key == "i").Value;
                     var enemyPlayersModel = model.Params.Players.Where(p => p.Key != "i").Select(p => p.Value).ToList();
+                    var myPlayer = new Player(myPlayerModel);
 
                     Simulator.Bonuses = model.Params.Bonuses.Select(b => new MapBonus(b)).ToList();
                     Simulator.Enemies = enemyPlayersModel.Select(p => new Player(p)).ToList();
-                    ReSetEnemyFearDic(Simulator.Enemies);
-
                     Simulator.MyTerritory = new HashSet<Point>(myPlayerModel.Territory.Select(t => new Point(t)));
                     foreach (var enemy in enemyPlayersModel)
                     {
                         Simulator.EnemyTerritory.UnionWith(enemy.Territory.Select(t => new Point(t)));
                     }
 
-                    var firstNode = new TreeNode {My = new Player(myPlayerModel), Parent = null, Depth = 0};
+                    ReSetMovesDic(Simulator.Enemies, myPlayer, Simulator.MyTerritory);
+                    var firstNode = new TreeNode {My = myPlayer, Parent = null, Depth = 0};
                     BuildTree(firstNode);
 
                     var nodes = _captureNodes.Count > 0 ? _captureNodes : _otherNodes;
@@ -122,7 +122,7 @@ namespace MiniAiCupPaperio
             }
         }
 
-        private static void ReSetEnemyFearDic(List<Player> enemies)
+        private static void ReSetMovesDic(List<Player> enemies, Player myPlayer, HashSet<Point> myTerritory)
         {
             var moveSize = World.Width;
 
@@ -130,91 +130,191 @@ namespace MiniAiCupPaperio
             {
                 for (int y = World.MinY; y <= World.MaxY; y += moveSize)
                 {
-                    Simulator.EnemyFearDic[new Point(x, y)] = MaxTickCount;
+                    Simulator.EnemyMoveDic[new Point(x, y)] = MaxTickCount;
                 }
             }
 
             foreach (var enemy in enemies)
             {
-                Simulator.EnemyFearDic[enemy.Position] = 0;
-                for (int i = moveSize; i <= World.MaxX; i += moveSize)
+                // доводим до точки поворота
+                var turnEnemyPosition = enemy.Position;
+                if (!Simulator.EnemyMoveDic.ContainsKey(turnEnemyPosition))
                 {
-                    int moveScore = i / moveSize;
-
-                    var upKey = new Point(enemy.Position.X, enemy.Position.Y + i);
-                    if (Simulator.EnemyFearDic.ContainsKey(upKey))
+                    for (int i = 5; i <= 25; i += 5)
                     {
-                        var upVal = enemy.Direction == Direction.Down ? moveScore + 2 : moveScore;
-                        Simulator.EnemyFearDic[upKey] = Simulator.EnemyFearDic[upKey] > upVal
-                            ? upVal
-                            : Simulator.EnemyFearDic[upKey];
-                    }
-                    var downKey = new Point(enemy.Position.X, enemy.Position.Y - i);
-                    if (Simulator.EnemyFearDic.ContainsKey(downKey))
-                    {
-                        var downVal = enemy.Direction == Direction.Up ? moveScore + 2 : moveScore;
-                        Simulator.EnemyFearDic[downKey] = Simulator.EnemyFearDic[downKey] > downVal
-                            ? downVal
-                            : Simulator.EnemyFearDic[downKey];
-                    }
-                    var rightKey = new Point(enemy.Position.X + i, enemy.Position.Y);
-                    if (Simulator.EnemyFearDic.ContainsKey(rightKey))
-                    {
-                        var rightVal = enemy.Direction == Direction.Left ? moveScore + 2 : moveScore;
-                        Simulator.EnemyFearDic[rightKey] = Simulator.EnemyFearDic[rightKey] > rightVal
-                            ? rightVal
-                            : Simulator.EnemyFearDic[rightKey];
-                    }
-                    var leftKey = new Point(enemy.Position.X - i, enemy.Position.Y);
-                    if (Simulator.EnemyFearDic.ContainsKey(leftKey))
-                    {
-                        var leftVal = enemy.Direction == Direction.Right ? moveScore + 2 : moveScore;
-                        Simulator.EnemyFearDic[leftKey] = Simulator.EnemyFearDic[leftKey] > leftVal
-                            ? leftVal
-                            : Simulator.EnemyFearDic[leftKey];
+                        turnEnemyPosition.X += i;
+                        if (Simulator.EnemyMoveDic.ContainsKey(turnEnemyPosition))
+                        {
+                            break;
+                        }
                     }
 
+                    turnEnemyPosition = enemy.Position;
+                    for (int i = 5; i <= 25; i += 5)
+                    {
+                        turnEnemyPosition.Y += i;
+                        if (Simulator.EnemyMoveDic.ContainsKey(turnEnemyPosition))
+                        {
+                            break;
+                        }
+                    }
+                }
 
-                    var diagonalVal = moveScore + 1;
-                    for (int j = enemy.Position.Y - i; j <= enemy.Position.Y + i; j += moveSize)
+                SetMoveDic(Simulator.EnemyMoveDic, turnEnemyPosition, enemy.Direction);
+            }
+        }
+
+        public static int GetMovesToTerritory(Player myPlayer, HashSet<Point> territory)
+        {
+            var moveSize = World.Width;
+            var position = myPlayer.Position;
+            var direction = myPlayer.Direction;
+
+            for (int i = moveSize; i <= MaxDepth * moveSize; i += moveSize)
+            {
+                int moveScore = i / moveSize;
+
+                var upKey = new Point(position.X, position.Y + i);
+                if (territory.Contains(upKey))
+                {
+                    return direction == Direction.Down ? moveScore + 2 : moveScore;
+                }
+                var downKey = new Point(position.X, position.Y - i);
+                if (territory.Contains(downKey))
+                {
+                    return direction == Direction.Up ? moveScore + 2 : moveScore;
+                }
+                var rightKey = new Point(position.X + i, position.Y);
+                if (territory.Contains(rightKey))
+                {
+                    return direction == Direction.Left ? moveScore + 2 : moveScore;
+                }
+                var leftKey = new Point(position.X - i, position.Y);
+                if (territory.Contains(leftKey))
+                {
+                    return direction == Direction.Right ? moveScore + 2 : moveScore;
+                }
+
+
+                var diagonalVal = moveScore + 1;
+                for (int j = position.Y - i; j <= position.Y + i; j += moveSize)
+                {
+                    var leftSideKey = new Point(position.X - i, j);
+                    if (territory.Contains(leftSideKey))
                     {
-                        var leftSideKey = new Point(enemy.Position.X - i, j);
-                        if (Simulator.EnemyFearDic.ContainsKey(leftSideKey))
-                        {
-                            Simulator.EnemyFearDic[leftSideKey] = Simulator.EnemyFearDic[leftSideKey] > diagonalVal
-                                ? diagonalVal
-                                : Simulator.EnemyFearDic[leftSideKey];
-                        }
+                        return diagonalVal;
                     }
-                    for (int j = enemy.Position.X - i; j <= enemy.Position.X + i; j += moveSize)
+                }
+                for (int j = position.X - i; j <= position.X + i; j += moveSize)
+                {
+                    var upSideKey = new Point(j, position.Y + i);
+                    if (territory.Contains(upSideKey))
                     {
-                        var upSideKey = new Point(j, enemy.Position.Y + i);
-                        if (Simulator.EnemyFearDic.ContainsKey(upSideKey))
-                        {
-                            Simulator.EnemyFearDic[upSideKey] = Simulator.EnemyFearDic[upSideKey] > diagonalVal
-                                ? diagonalVal
-                                : Simulator.EnemyFearDic[upSideKey];
-                        }
+                        return diagonalVal;
                     }
-                    for (int j = enemy.Position.Y - i; j <= enemy.Position.Y + i; j += moveSize)
+                }
+                for (int j = position.Y - i; j <= position.Y + i; j += moveSize)
+                {
+                    var rightSideKey = new Point(position.X + i, j);
+                    if (territory.Contains(rightSideKey))
                     {
-                        var rightSideKey = new Point(enemy.Position.X + i, j);
-                        if (Simulator.EnemyFearDic.ContainsKey(rightSideKey))
-                        {
-                            Simulator.EnemyFearDic[rightSideKey] = Simulator.EnemyFearDic[rightSideKey] > diagonalVal
-                                ? diagonalVal
-                                : Simulator.EnemyFearDic[rightSideKey];
-                        }
+                        return diagonalVal;
                     }
-                    for (int j = enemy.Position.X - i; j <= enemy.Position.X + i; j += moveSize)
+                }
+                for (int j = position.X - i; j <= position.X + i; j += moveSize)
+                {
+                    var downSideKey = new Point(j, position.Y - i);
+                    if (territory.Contains(downSideKey))
                     {
-                        var downSideKey = new Point(j, enemy.Position.Y - i);
-                        if (Simulator.EnemyFearDic.ContainsKey(downSideKey))
-                        {
-                            Simulator.EnemyFearDic[downSideKey] = Simulator.EnemyFearDic[downSideKey] > diagonalVal
-                                ? diagonalVal
-                                : Simulator.EnemyFearDic[downSideKey];
-                        }
+                        return diagonalVal;
+                    }
+                }
+            }
+            return 0;
+        }
+
+        private static void SetMoveDic(Dictionary<Point, int> moveDic, Point position, string direction)
+        {
+            var moveSize = World.Width;
+
+            moveDic[position] = 0;
+            for (int i = moveSize; i <= World.MaxX; i += moveSize)
+            {
+                int moveScore = i / moveSize;
+
+                var upKey = new Point(position.X, position.Y + i);
+                if (moveDic.ContainsKey(upKey))
+                {
+                    var upVal = direction == Direction.Down ? moveScore + 2 : moveScore;
+                    moveDic[upKey] = moveDic[upKey] > upVal
+                        ? upVal
+                        : moveDic[upKey];
+                }
+                var downKey = new Point(position.X, position.Y - i);
+                if (moveDic.ContainsKey(downKey))
+                {
+                    var downVal = direction == Direction.Up ? moveScore + 2 : moveScore;
+                    moveDic[downKey] = moveDic[downKey] > downVal
+                        ? downVal
+                        : moveDic[downKey];
+                }
+                var rightKey = new Point(position.X + i, position.Y);
+                if (moveDic.ContainsKey(rightKey))
+                {
+                    var rightVal = direction == Direction.Left ? moveScore + 2 : moveScore;
+                    moveDic[rightKey] = moveDic[rightKey] > rightVal
+                        ? rightVal
+                        : moveDic[rightKey];
+                }
+                var leftKey = new Point(position.X - i, position.Y);
+                if (moveDic.ContainsKey(leftKey))
+                {
+                    var leftVal = direction == Direction.Right ? moveScore + 2 : moveScore;
+                    moveDic[leftKey] = moveDic[leftKey] > leftVal
+                        ? leftVal
+                        : moveDic[leftKey];
+                }
+
+
+                var diagonalVal = moveScore + 1;
+                for (int j = position.Y - i; j <= position.Y + i; j += moveSize)
+                {
+                    var leftSideKey = new Point(position.X - i, j);
+                    if (moveDic.ContainsKey(leftSideKey))
+                    {
+                        moveDic[leftSideKey] = moveDic[leftSideKey] > diagonalVal
+                            ? diagonalVal
+                            : moveDic[leftSideKey];
+                    }
+                }
+                for (int j = position.X - i; j <= position.X + i; j += moveSize)
+                {
+                    var upSideKey = new Point(j, position.Y + i);
+                    if (moveDic.ContainsKey(upSideKey))
+                    {
+                        moveDic[upSideKey] = moveDic[upSideKey] > diagonalVal
+                            ? diagonalVal
+                            : moveDic[upSideKey];
+                    }
+                }
+                for (int j = position.Y - i; j <= position.Y + i; j += moveSize)
+                {
+                    var rightSideKey = new Point(position.X + i, j);
+                    if (moveDic.ContainsKey(rightSideKey))
+                    {
+                        moveDic[rightSideKey] = moveDic[rightSideKey] > diagonalVal
+                            ? diagonalVal
+                            : moveDic[rightSideKey];
+                    }
+                }
+                for (int j = position.X - i; j <= position.X + i; j += moveSize)
+                {
+                    var downSideKey = new Point(j, position.Y - i);
+                    if (moveDic.ContainsKey(downSideKey))
+                    {
+                        moveDic[downSideKey] = moveDic[downSideKey] > diagonalVal
+                            ? diagonalVal
+                            : moveDic[downSideKey];
                     }
                 }
             }

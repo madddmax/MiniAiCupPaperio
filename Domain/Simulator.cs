@@ -10,7 +10,8 @@ namespace MiniAiCupPaperio
         public static List<Player> Enemies = new List<Player>();
         public static HashSet<Point> MyTerritory = new HashSet<Point>();
         public static HashSet<Point> EnemyTerritory = new HashSet<Point>();
-        public static Dictionary<Point, int> EnemyFearDic = new Dictionary<Point, int>();
+        public static Dictionary<Point, int> EnemyMoveDic = new Dictionary<Point, int>();
+        public static Dictionary<Point, int> ScorePointDic = new Dictionary<Point, int>();
 
         public static int BorderPushingScore = 5;
 
@@ -117,11 +118,11 @@ namespace MiniAiCupPaperio
                 myNext.Lines.Add(my.Position);
             }
 
-
+            var movesToMyTerritory = Program.GetMovesToTerritory(my, MyTerritory);
             foreach (var l in myNext.Lines)
             {
                 // проблема, т.к. глубина тут не причем на существующем шлейфе
-                if (EnemyFearDic[l] <= depth + 1)
+                if (EnemyMoveDic[l] <= movesToMyTerritory + 1)
                 {
                     // страх пересечения шлейфа
                     //return null;
@@ -132,7 +133,7 @@ namespace MiniAiCupPaperio
             var onMyTerritory = MyTerritory.Contains(myNext.Position);
             if (!onMyTerritory)
             {
-                if (EnemyFearDic[myNext.Position] <= depth + 1)
+                if (EnemyMoveDic[myNext.Position] <= movesToMyTerritory + 1)
                 {
                     // страх столкновения с головой
                     //return null;
