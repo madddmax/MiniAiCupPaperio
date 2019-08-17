@@ -137,7 +137,7 @@ namespace MiniAiCupPaperio
                 if (!onMyTerritory)
                 {
                     int enemyPath = GetPath(e.Position, e.Direction, myNext.Position);
-                    int myPath = depth * World.Width + 2*World.Width;
+                    int myPath = depth * World.Width + World.Width;
 
                     if (enemyPath / enemyAverageSpeed - myPath / myAverageSpeed < 1)
                     {
@@ -157,18 +157,7 @@ namespace MiniAiCupPaperio
             {
                 if (bonus.Position.Equals(myNext.Position))
                 {
-                    if (bonus.Type == Bonus.Nitro)
-                    {
-                        myNext.Score += bonus.ActiveTicks;
-                    }
-                    else if (bonus.Type == Bonus.Slow)
-                    {
-                        myNext.Score -= bonus.ActiveTicks;
-                    }
-                    else if (bonus.Type == Bonus.Saw)
-                    {
-                        myNext.Score += 25;
-                    }
+                    myNext.Score += GetBonusScore(bonus);
                 }
             }
 
@@ -241,18 +230,7 @@ namespace MiniAiCupPaperio
                     {
                         if (bonus.Position.Equals(p))
                         {
-                            if (bonus.Type == Bonus.Nitro)
-                            {
-                                myNext.Score += bonus.ActiveTicks;
-                            }
-                            else if (bonus.Type == Bonus.Slow)
-                            {
-                                myNext.Score -= bonus.ActiveTicks;
-                            }
-                            else if (bonus.Type == Bonus.Saw)
-                            {
-                                myNext.Score += 25;
-                            }
+                            myNext.Score += GetBonusScore(bonus);
                         }
                     }
                 }
@@ -261,6 +239,20 @@ namespace MiniAiCupPaperio
             }
 
             return myNext;
+        }
+
+        public static int GetBonusScore(MapBonus bonus)
+        {
+            if (bonus.Type == Bonus.Nitro)
+            {
+                return bonus.ActiveTicks;
+            }
+            if (bonus.Type == Bonus.Slow)
+            {
+                return -2 * bonus.ActiveTicks;
+            }
+
+            return 25;
         }
 
         public static int GetPath(Point start, string direction, Point end)
@@ -273,25 +265,25 @@ namespace MiniAiCupPaperio
             // движение направо
             if (deltaX > 0)
             {
-                path += direction == Direction.Left ? deltaX + penaltyPath : deltaX;
+                path += direction == Direction.Left && deltaY == 0 ? deltaX + penaltyPath : deltaX;
             }
 
             // движение налево
             if (deltaX < 0)
             {
-                path += direction == Direction.Right ? -deltaX + penaltyPath : -deltaX;
+                path += direction == Direction.Right && deltaY == 0 ? -deltaX + penaltyPath : -deltaX;
             }
 
             // движение вверх
             if (deltaY > 0)
             {
-                path += direction == Direction.Down ? deltaY + penaltyPath : deltaY;
+                path += direction == Direction.Down && deltaX == 0 ? deltaY + penaltyPath : deltaY;
             }
 
             // движение вниз
             if (deltaY < 0)
             {
-                path += direction == Direction.Up ? -deltaY + penaltyPath : -deltaY;
+                path += direction == Direction.Up && deltaX == 0 ? -deltaY + penaltyPath : -deltaY;
             }
 
             return path;
