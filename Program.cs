@@ -62,6 +62,7 @@ namespace MiniAiCupPaperio
                     }
 
                     var firstNode = new TreeNode {My = new Player(myPlayerModel), Parent = null, Depth = 0};
+                    SetDirectionsScore(firstNode.My.Position);
                     BuildTree(firstNode);
 
                     var nodes = _captureNodes.Count > 0 ? _captureNodes : _otherNodes;
@@ -117,6 +118,35 @@ namespace MiniAiCupPaperio
 
                 BuildTree(nextNode);
             }
+        }
+
+        private static readonly Dictionary<Point, int> ScoreMap = new Dictionary<Point, int>();
+        private static void SetDirectionsScore(Point position)
+        {
+            for (int x = World.MinX; x <= World.MaxX; x += World.Width)
+            {
+                for (int y = World.MinY; y <= World.MaxY; y += World.Width)
+                {
+                    var point = new Point(x, y);
+                    if (Simulator.EnemyTerritory.Contains(point))
+                    {
+                        ScoreMap[point] = 5;
+                    }
+
+                    if (Simulator.MyTerritory.Contains(point))
+                    {
+                        ScoreMap[point] = 0;
+                    }
+
+                    ScoreMap[point] = 1;
+                }
+            }
+
+            Simulator.LeftScore = ScoreMap.Where(s => s.Key.X < position.X).Sum(s => s.Value);
+            Simulator.RightScore = ScoreMap.Where(s => s.Key.X > position.X).Sum(s => s.Value);
+            Simulator.UpScore = ScoreMap.Where(s => s.Key.Y > position.Y).Sum(s => s.Value);
+            Simulator.DownScore = ScoreMap.Where(s => s.Key.Y < position.Y).Sum(s => s.Value);
+            Simulator.TotalScore = Simulator.LeftScore + Simulator.RightScore + Simulator.UpScore + Simulator.DownScore;
         }
     }
 }
