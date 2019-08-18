@@ -143,49 +143,6 @@ namespace MiniAiCupPaperio
                     // пересекает шлейф противника
                     myNext.Score += 50;
                 }
-
-                if (e.Lines.Count > 0 && e.Territory.Count > 0)
-                {
-                    // страх окружения
-                    var polygon = new List<Point>(e.Lines);
-                    var firstPosition = e.Lines.First();
-                    var lastPosition = e.Lines.Last();
-                    var position = e.Territory.OrderBy(b => Distance(b, lastPosition)).First();
-                    for (int i = 0; i < 30; i++)
-                    {
-                        polygon.Add(position);
-
-                        var myBorder = new List<Point>();
-                        foreach (var n in PointExtension.GetNeighboring(position))
-                        {
-                            if (n.Equals(firstPosition))
-                            {
-                                i = 30;
-                                break;
-                            }
-
-                            if (e.Territory.Contains(n))
-                            {
-                                myBorder.Add(n);
-                            }
-                        }
-
-                        if (myBorder.Count > 0)
-                        {
-                            position = myBorder.OrderBy(b => Distance(b, firstPosition)).First();
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-
-                    if (PointExtension.InPolygon(polygon, myNext.Position))
-                    {
-                        myNext.Score -= 500;
-                    }
-                }
-
             }
 
             foreach (var bonus in MapBonuses)
@@ -271,6 +228,54 @@ namespace MiniAiCupPaperio
                 }
 
                 myNext.HasCapture = true;
+            }
+
+            if (myNext.HasCapture)
+            {
+                foreach (var e in Enemies)
+                {
+                    if (e.Lines.Count > 0 && e.Territory.Count > 0)
+                    {
+                        // страх окружения
+                        var polygon = new List<Point>(e.Lines);
+                        var firstPosition = e.Lines.First();
+                        var lastPosition = e.Lines.Last();
+                        var position = e.Territory.OrderBy(b => Distance(b, lastPosition)).First();
+                        for (int i = 0; i < 30; i++)
+                        {
+                            polygon.Add(position);
+
+                            var myBorder = new List<Point>();
+                            foreach (var n in PointExtension.GetNeighboring(position))
+                            {
+                                if (n.Equals(firstPosition))
+                                {
+                                    i = 30;
+                                    break;
+                                }
+
+                                if (e.Territory.Contains(n))
+                                {
+                                    myBorder.Add(n);
+                                }
+                            }
+
+                            if (myBorder.Count > 0)
+                            {
+                                position = myBorder.OrderBy(b => Distance(b, firstPosition)).First();
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+
+                        if (PointExtension.InPolygon(polygon, myNext.Position))
+                        {
+                            myNext.Score -= 500;
+                        }
+                    }
+                }
             }
 
             return myNext;
