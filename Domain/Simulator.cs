@@ -134,7 +134,7 @@ namespace MiniAiCupPaperio
                     }
                 }
 
-                if (!onMyTerritory)
+                if (myNext.Lines.Count > 0 || !onMyTerritory)
                 {
                     int enemyPath = GetPath(e.Position, e.Direction, myNext.Position);
                     int myPath = depth * World.Width + World.Width;
