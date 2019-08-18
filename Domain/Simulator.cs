@@ -7,7 +7,7 @@ namespace MiniAiCupPaperio
     public static class Simulator
     {
         public static List<MapBonus> MapBonuses = new List<MapBonus>();
-        public static List<Player> Enemies = new List<Player>();
+        public static List<EnemyPlayer> Enemies = new List<EnemyPlayer>();
         public static HashSet<Point> MyTerritory = new HashSet<Point>();
         public static HashSet<Point> EnemyTerritory = new HashSet<Point>();
 
@@ -115,6 +115,49 @@ namespace MiniAiCupPaperio
                     // пересекает шлейф противника
                     myNext.Score += 50;
                 }
+
+                if (e.Lines.Count > 0 && e.Territory.Count > 0)
+                {
+                    // страх окружения
+                    var polygon = new List<Point>(e.Lines);
+                    var firstPosition = e.Lines.First();
+                    var lastPosition = e.Lines.Last();
+                    var position = e.Territory.OrderBy(b => Distance(b, lastPosition)).First();
+                    for (int i = 0; i < 30; i++)
+                    {
+                        polygon.Add(position);
+
+                        var myBorder = new List<Point>();
+                        foreach (var n in PointExtension.GetNeighboring(position))
+                        {
+                            if (n.Equals(firstPosition))
+                            {
+                                i = 30;
+                                break;
+                            }
+
+                            if (e.Territory.Contains(n))
+                            {
+                                myBorder.Add(n);
+                            }
+                        }
+
+                        if (myBorder.Count > 0)
+                        {
+                            position = myBorder.OrderBy(b => Distance(b, firstPosition)).First();
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+
+                    if (PointExtension.InPolygon(polygon, myNext.Position))
+                    {
+                        myNext.Score -= 500;
+                    }
+                }
+
             }
 
             foreach (var bonus in MapBonuses)

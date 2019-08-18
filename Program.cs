@@ -54,7 +54,7 @@ namespace MiniAiCupPaperio
                     var enemyPlayersModel = model.Params.Players.Where(p => p.Key != "i").Select(p => p.Value).ToList();
 
                     Simulator.MapBonuses = model.Params.Bonuses.Select(b => new MapBonus(b)).ToList();
-                    Simulator.Enemies = enemyPlayersModel.Select(p => new Player(p)).ToList();
+                    Simulator.Enemies = enemyPlayersModel.Select(p => new EnemyPlayer(p)).ToList();
                     Simulator.MyTerritory = new HashSet<Point>(myPlayerModel.Territory.Select(t => new Point(t)));
                     foreach (var enemy in enemyPlayersModel)
                     {
