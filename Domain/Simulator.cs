@@ -11,11 +11,7 @@ namespace MiniAiCupPaperio
         public static HashSet<Point> MyTerritory = new HashSet<Point>();
         public static HashSet<Point> EnemyTerritory = new HashSet<Point>();
 
-        public static int LeftScore;
-        public static int RightScore;
-        public static int UpScore;
-        public static int DownScore;
-        public static int TotalScore;
+        public static int BorderPushingScore = 10;
 
         public static Player GetNext(Player my, string direction, int depth)
         {
@@ -30,15 +26,18 @@ namespace MiniAiCupPaperio
                     return null;
                 }
 
-                if (MyTerritory.Contains(myNext.Position) &&
+                if (myNext.Position.X <= World.MinX + World.Width)
+                {
+                    // отталкивание от границы
+                    myNext.Score -= BorderPushingScore;
+                }
+                else if (MyTerritory.Contains(myNext.Position) &&
                          MyTerritory.Contains(new Point(myNext.Position.X - World.Width, myNext.Position.Y)) &&
                          MyTerritory.Contains(new Point(myNext.Position.X - World.Width * 2, myNext.Position.Y)))
                 {
                     // отталкивание от захваченной территории
                     myNext.Score -= 1;
                 }
-
-                myNext.Score += GetDirectionScore(LeftScore);
             }
             else if(myNext.Direction == Direction.Right)
             {
@@ -48,15 +47,18 @@ namespace MiniAiCupPaperio
                     return null;
                 }
 
-                if (MyTerritory.Contains(myNext.Position) &&
+                if (myNext.Position.X >= World.MaxX - World.Width)
+                {
+                    // отталкивание от границы
+                    myNext.Score -= BorderPushingScore;
+                }
+                else if (MyTerritory.Contains(myNext.Position) &&
                          MyTerritory.Contains(new Point(myNext.Position.X + World.Width, myNext.Position.Y)) &&
                          MyTerritory.Contains(new Point(myNext.Position.X + World.Width * 2, myNext.Position.Y)))
                 {
                     // отталкивание от захваченной территории
                     myNext.Score -= 1;
                 }
-
-                myNext.Score += GetDirectionScore(RightScore);
             }
             else if (myNext.Direction == Direction.Up)
             {
@@ -66,15 +68,18 @@ namespace MiniAiCupPaperio
                     return null;
                 }
 
-                if (MyTerritory.Contains(myNext.Position) &&
+                if (myNext.Position.Y >= World.MaxY - World.Width)
+                {
+                    // отталкивание от границы
+                    myNext.Score -= BorderPushingScore;
+                }
+                else if (MyTerritory.Contains(myNext.Position) &&
                          MyTerritory.Contains(new Point(myNext.Position.X, myNext.Position.Y - World.Width)) &&
                          MyTerritory.Contains(new Point(myNext.Position.X, myNext.Position.Y - World.Width * 2)))
                 {
                     // отталкивание от захваченной территории
                     myNext.Score -= 1;
                 }
-
-                myNext.Score += GetDirectionScore(UpScore);
             }
             else if (myNext.Direction == Direction.Down)
             {
@@ -84,15 +89,18 @@ namespace MiniAiCupPaperio
                     return null;
                 }
 
-                if (MyTerritory.Contains(myNext.Position) &&
+                if (myNext.Position.Y <= World.MinY + World.Width)
+                {
+                    // отталкивание от границы
+                    myNext.Score -= BorderPushingScore;
+                }
+                else if (MyTerritory.Contains(myNext.Position) &&
                          MyTerritory.Contains(new Point(myNext.Position.X, myNext.Position.Y + World.Width)) &&
                          MyTerritory.Contains(new Point(myNext.Position.X, myNext.Position.Y + World.Width * 2)))
                 {
                     // отталкивание от захваченной территории
                     myNext.Score -= 1;
                 }
-
-                myNext.Score += GetDirectionScore(DownScore);
             }
 
             if (myNext.Lines.Contains(myNext.Position))
@@ -279,17 +287,6 @@ namespace MiniAiCupPaperio
             }
 
             return myNext;
-        }
-
-        private static int GetDirectionScore(int score)
-        {
-            var ratio = (double)score / TotalScore;
-            if (ratio > 0.5)
-            {
-                return 1;
-            }
-
-            return 0;
         }
 
         public static int GetBonusScore(MapBonus bonus, string direction, bool isCaptured, Point player)
