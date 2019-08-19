@@ -149,7 +149,7 @@ namespace MiniAiCupPaperio
             {
                 if (bonus.Position.Equals(myNext.Position))
                 {
-                    myNext.Score += GetBonusScore(bonus);
+                    myNext.Score += GetBonusScore(bonus, myNext.Direction, false, myNext.Position);
                 }
             }
 
@@ -222,7 +222,7 @@ namespace MiniAiCupPaperio
                     {
                         if (bonus.Position.Equals(p))
                         {
-                            myNext.Score += GetBonusScore(bonus);
+                            myNext.Score += GetBonusScore(bonus, myNext.Direction, true, myNext.Position);
                         }
                     }
                 }
@@ -284,7 +284,7 @@ namespace MiniAiCupPaperio
         private static int GetDirectionScore(int score)
         {
             var ratio = (double)score / TotalScore;
-            if (ratio > 0.4)
+            if (ratio > 0.5)
             {
                 return 1;
             }
@@ -292,7 +292,7 @@ namespace MiniAiCupPaperio
             return 0;
         }
 
-        public static int GetBonusScore(MapBonus bonus)
+        public static int GetBonusScore(MapBonus bonus, string direction, bool isCaptured, Point player)
         {
             if (bonus.Type == Bonus.Nitro)
             {
@@ -303,7 +303,30 @@ namespace MiniAiCupPaperio
                 return -2 * bonus.ActiveTicks;
             }
 
-            return 25;
+            var sawScore = 0;
+            var firePosition = isCaptured ? player : bonus.Position;
+            foreach (var e in Enemies)
+            {
+                if (direction == Direction.Left)
+                {
+                    sawScore += e.Territory.Any(t => t.Y == firePosition.Y && t.X < firePosition.X) ? 30 : 0;
+                }
+                else if(direction == Direction.Right)
+                {
+                    sawScore += e.Territory.Any(t => t.Y == firePosition.Y && t.X > firePosition.X) ? 30 : 0;
+                }
+                else if (direction == Direction.Up)
+                {
+                    sawScore += e.Territory.Any(t => t.X == firePosition.X && t.Y > firePosition.Y) ? 30 : 0;
+                }
+                else if (direction == Direction.Down)
+                {
+                    sawScore += e.Territory.Any(t => t.X == firePosition.X && t.Y < firePosition.Y) ? 30 : 0;
+                }
+            }
+
+
+            return sawScore;
         }
 
         public static int GetPath(Point start, string direction, Point end)
@@ -372,11 +395,11 @@ namespace MiniAiCupPaperio
                 {
                     if (t <= bonus.Ticks)
                     {
-                        speedSum += 6;
+                        speedSum += 3;
                     }
                     else
                     {
-                        speedSum += 3;
+                        speedSum += 5;
                     }
                 }
 
