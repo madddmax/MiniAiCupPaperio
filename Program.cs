@@ -62,7 +62,7 @@ namespace MiniAiCupPaperio
                     }
 
                     var firstNode = new TreeNode {My = new Player(myPlayerModel), Parent = null, Depth = 0};
-                    SetDirectionsScore(firstNode.My.Position);
+                    SetScore(firstNode.My.Position);
                     BuildTree(firstNode);
 
                     var nodes = _captureNodes.Count > 0 ? _captureNodes : _otherNodes;
@@ -120,33 +120,100 @@ namespace MiniAiCupPaperio
             }
         }
 
-        private static readonly Dictionary<Point, int> ScoreMap = new Dictionary<Point, int>();
-        private static void SetDirectionsScore(Point position)
+        private static void SetScore(Point position)
         {
-            for (int x = World.MinX; x <= World.MaxX; x += World.Width)
+            var moveSize = World.Width;
+            for (int i = moveSize; i <= World.MaxX; i += moveSize)
             {
-                for (int y = World.MinY; y <= World.MaxY; y += World.Width)
+                var upKey = new Point(position.X, position.Y + i);
+                if (ContainsKey(upKey))
                 {
-                    var point = new Point(x, y);
-                    if (Simulator.EnemyTerritory.Contains(point))
-                    {
-                        ScoreMap[point] = 5;
-                    }
+                    Simulator.UpScore += GetScore(upKey);
+                }
 
-                    if (Simulator.MyTerritory.Contains(point))
-                    {
-                        ScoreMap[point] = 0;
-                    }
+                var downKey = new Point(position.X, position.Y - i);
+                if (ContainsKey(downKey))
+                {
+                    Simulator.DownScore += GetScore(downKey);
+                }
 
-                    ScoreMap[point] = 1;
+                var rightKey = new Point(position.X + i, position.Y);
+                if (ContainsKey(rightKey))
+                {
+                    Simulator.RightScore += GetScore(rightKey);
+                }
+
+                var leftKey = new Point(position.X - i, position.Y);
+                if (ContainsKey(leftKey))
+                {
+                    Simulator.LeftScore += GetScore(leftKey);
+                }
+
+
+                for (int j = position.Y - i; j <= position.Y + i; j += moveSize)
+                {
+                    var leftSideKey = new Point(position.X - i, j);
+                    if (ContainsKey(leftSideKey))
+                    {
+                        Simulator.LeftScore += GetScore(leftSideKey);
+                    }
+                }
+
+                for (int j = position.X - i; j <= position.X + i; j += moveSize)
+                {
+                    var upSideKey = new Point(j, position.Y + i);
+                    if (ContainsKey(upSideKey))
+                    {
+                        Simulator.UpScore += GetScore(upSideKey);
+                    }
+                }
+
+                for (int j = position.Y - i; j <= position.Y + i; j += moveSize)
+                {
+                    var rightSideKey = new Point(position.X + i, j);
+                    if (ContainsKey(rightSideKey))
+                    {
+                        Simulator.RightScore += GetScore(rightSideKey);
+                    }
+                }
+
+                for (int j = position.X - i; j <= position.X + i; j += moveSize)
+                {
+                    var downSideKey = new Point(j, position.Y - i);
+                    if (ContainsKey(downSideKey))
+                    {
+                        Simulator.DownScore += GetScore(downSideKey);
+                    }
                 }
             }
 
-            Simulator.LeftScore = ScoreMap.Where(s => s.Key.X < position.X).Sum(s => s.Value);
-            Simulator.RightScore = ScoreMap.Where(s => s.Key.X > position.X).Sum(s => s.Value);
-            Simulator.UpScore = ScoreMap.Where(s => s.Key.Y > position.Y).Sum(s => s.Value);
-            Simulator.DownScore = ScoreMap.Where(s => s.Key.Y < position.Y).Sum(s => s.Value);
             Simulator.TotalScore = Simulator.LeftScore + Simulator.RightScore + Simulator.UpScore + Simulator.DownScore;
+        }
+
+        private static bool ContainsKey(Point point)
+        {
+            return point.X >= World.MinX && point.X <= World.MaxX &&
+                   point.Y >= World.MinY && point.Y <= World.MaxY;
+        }
+
+        private static int GetScore(Point point)
+        {
+            if (Simulator.Enemies.Any(e => e.Position.Equals(point)))
+            {
+                return -30;
+            }
+
+            if (Simulator.EnemyTerritory.Contains(point))
+            {
+                return 5;
+            }
+
+            if (Simulator.MyTerritory.Contains(point))
+            {
+                return 0;
+            }
+
+            return 1;
         }
     }
 }
