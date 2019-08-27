@@ -53,16 +53,16 @@ namespace MiniAiCupPaperio
                     var myPlayerModel = model.Params.Players.First(p => p.Key == "i").Value;
                     var enemyPlayersModel = model.Params.Players.Where(p => p.Key != "i").Select(p => p.Value).ToList();
 
-                    Simulator.MapBonuses = model.Params.Bonuses.Select(b => new MapBonus(b)).ToList();
-                    Simulator.Enemies = enemyPlayersModel.Select(p => new EnemyPlayer(p)).ToList();
-                    Simulator.MyTerritory = new HashSet<Point>(myPlayerModel.Territory.Select(t => new Point(t)));
+                    Global.MapBonuses = model.Params.Bonuses.Select(b => new MapBonus(b)).ToList();
+                    Global.Enemies = enemyPlayersModel.Select(p => new EnemyPlayer(p)).ToList();
+                    Global.MyTerritory = new HashSet<Point>(myPlayerModel.Territory.Select(t => new Point(t)));
                     foreach (var enemy in enemyPlayersModel)
                     {
-                        Simulator.EnemyTerritory.UnionWith(enemy.Territory.Select(t => new Point(t)));
+                        Global.EnemyTerritory.UnionWith(enemy.Territory.Select(t => new Point(t)));
                     }
 
                     var firstNode = new TreeNode {My = new Player(myPlayerModel), Parent = null, Depth = 0};
-                    SetScore(firstNode.My.Position);
+                    MacroLevel.SetDirectionsScore(firstNode.My.Position);
                     BuildTree(firstNode);
 
                     var nodes = _captureNodes.Count > 0 ? _captureNodes : _otherNodes;
@@ -118,102 +118,6 @@ namespace MiniAiCupPaperio
 
                 BuildTree(nextNode);
             }
-        }
-
-        private static void SetScore(Point position)
-        {
-            var moveSize = World.Width;
-            for (int i = moveSize; i <= World.MaxX; i += moveSize)
-            {
-                var upKey = new Point(position.X, position.Y + i);
-                if (ContainsKey(upKey))
-                {
-                    Simulator.UpScore += GetScore(upKey);
-                }
-
-                var downKey = new Point(position.X, position.Y - i);
-                if (ContainsKey(downKey))
-                {
-                    Simulator.DownScore += GetScore(downKey);
-                }
-
-                var rightKey = new Point(position.X + i, position.Y);
-                if (ContainsKey(rightKey))
-                {
-                    Simulator.RightScore += GetScore(rightKey);
-                }
-
-                var leftKey = new Point(position.X - i, position.Y);
-                if (ContainsKey(leftKey))
-                {
-                    Simulator.LeftScore += GetScore(leftKey);
-                }
-
-
-                for (int j = position.Y - i; j <= position.Y + i; j += moveSize)
-                {
-                    var leftSideKey = new Point(position.X - i, j);
-                    if (ContainsKey(leftSideKey))
-                    {
-                        Simulator.LeftScore += GetScore(leftSideKey);
-                    }
-                }
-
-                for (int j = position.X - i; j <= position.X + i; j += moveSize)
-                {
-                    var upSideKey = new Point(j, position.Y + i);
-                    if (ContainsKey(upSideKey))
-                    {
-                        Simulator.UpScore += GetScore(upSideKey);
-                    }
-                }
-
-                for (int j = position.Y - i; j <= position.Y + i; j += moveSize)
-                {
-                    var rightSideKey = new Point(position.X + i, j);
-                    if (ContainsKey(rightSideKey))
-                    {
-                        Simulator.RightScore += GetScore(rightSideKey);
-                    }
-                }
-
-                for (int j = position.X - i; j <= position.X + i; j += moveSize)
-                {
-                    var downSideKey = new Point(j, position.Y - i);
-                    if (ContainsKey(downSideKey))
-                    {
-                        Simulator.DownScore += GetScore(downSideKey);
-                    }
-                }
-            }
-
-            Simulator.TotalScore = Simulator.LeftScore + Simulator.RightScore + Simulator.UpScore + Simulator.DownScore;
-        }
-
-        private static bool ContainsKey(Point point)
-        {
-            return point.X >= World.MinX && point.X <= World.MaxX &&
-                   point.Y >= World.MinY && point.Y <= World.MaxY;
-        }
-
-        private static int GetScore(Point point)
-        {
-            if (Simulator.Enemies.Any(e => e.Position.Equals(point)))
-            {
-                return -30;
-            }
-
-            if (Simulator.EnemyTerritory.Contains(point))
-            {
-                return 5;
-            }
-
-            if (Simulator.MyTerritory.Contains(point))
-            {
-                return 0;
-            }
-
-            return 1;
         }
     }
 }

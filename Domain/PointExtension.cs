@@ -48,24 +48,49 @@ namespace MiniAiCupPaperio
             return neighboring;
         }
 
-        public static List<Point> GetBoundary(HashSet<Point> territory)
+        public static double Distance(Point p1, Point p2)
         {
-            var boundary = new List<Point>();
-            foreach (var point in territory)
-            {
-                var neighboring = GetNeighboring(point);
-                foreach (var n in neighboring)
-                {
-                    if (territory.Contains(n) || boundary.Contains(n))
-                    {
-                        continue;
-                    }
+            return (p1.X - p2.X) * (p1.X - p2.X) + (p1.Y - p2.Y) * (p1.Y - p2.Y);
+        }
 
-                    boundary.Add(n);
-                }
+        public static bool IsOnTheWorld(Point point)
+        {
+            return point.X >= World.MinX && point.X <= World.MaxX &&
+                   point.Y >= World.MinY && point.Y <= World.MaxY;
+        }
+
+        public static int GetPath(Point start, string direction, Point end)
+        {
+            int path = 0;
+            int deltaX = end.X - start.X;
+            int deltaY = end.Y - start.Y;
+            int penaltyPath = 2 * World.Width;
+
+            // движение направо
+            if (deltaX > 0)
+            {
+                path += direction == Direction.Left && deltaY == 0 ? deltaX + penaltyPath : deltaX;
             }
 
-            return boundary;
+            // движение налево
+            if (deltaX < 0)
+            {
+                path += direction == Direction.Right && deltaY == 0 ? -deltaX + penaltyPath : -deltaX;
+            }
+
+            // движение вверх
+            if (deltaY > 0)
+            {
+                path += direction == Direction.Down && deltaX == 0 ? deltaY + penaltyPath : deltaY;
+            }
+
+            // движение вниз
+            if (deltaY < 0)
+            {
+                path += direction == Direction.Up && deltaX == 0 ? -deltaY + penaltyPath : -deltaY;
+            }
+
+            return path;
         }
     }
 }
