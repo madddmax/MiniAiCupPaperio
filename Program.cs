@@ -13,7 +13,7 @@ namespace MiniAiCupPaperio
         private static List<TreeNode> _captureNodes = new List<TreeNode>();
         private static List<TreeNode> _otherNodes = new List<TreeNode>();
 
-        private const int MaxTickCount = 2500;
+        private const int MaxTickCount = 1500;
         static int _currentTick = 0;
 
         private static void Main(string[] args)
